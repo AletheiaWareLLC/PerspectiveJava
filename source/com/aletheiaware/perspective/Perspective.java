@@ -182,6 +182,9 @@ public abstract class Perspective {
     }
 
     public void setOutline(String program, String mesh, String colour) {
+        if (lineRotation == null) {
+            return;
+        }
         System.out.println("Outline " + program + " : " + mesh + " : " + colour);
         String name = "outline0";
         String type = "outline";
@@ -202,6 +205,9 @@ public abstract class Perspective {
     }
 
     public void setGuide(String program, String mesh, String colour) {
+        if (lineRotation == null) {
+            return;
+        }
         System.out.println("Guide " + program + " : " + mesh + " : " + colour);
         String name = "guide0";
         String type = "guide";
@@ -222,6 +228,9 @@ public abstract class Perspective {
     }
 
     public void addElement(String program, String name, String type, String mesh, Vector location, String colour) {
+        if (basicRotation == null) {
+            return;
+        }
         System.out.println("Adding " + program + " : " + type + " : " + name + " : " + mesh + " : " + location + " : " + colour);
         TranslateNode translateNode = new TranslateNode(name);
         basicRotation.addChild(translateNode);
@@ -274,7 +283,9 @@ public abstract class Perspective {
 
     public void reset() {
         clearAllLocations();
-        lineRotation.clear();
+        if (lineRotation != null) {
+            lineRotation.clear();
+        }
         importPuzzle(puzzle);
     }
 
