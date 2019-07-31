@@ -246,6 +246,10 @@ public abstract class Perspective {
             for (Element e : es) {
                 Vector v = scene.getVector(e.name);
                 if (location.equals(v)) {
+                    Vector l = linkedPortals.remove(v);
+                    if (l != null) {
+                        linkedPortals.remove(l);
+                    }
                     element = e;
                     break;
                 }
@@ -264,6 +268,7 @@ public abstract class Perspective {
     public void clearAllLocations() {
         System.out.println("Clearing all locations");
         elements.clear();
+        linkedPortals.clear();
         basicRotation.clear();
     }
 
