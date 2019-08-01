@@ -49,7 +49,6 @@ import java.util.Set;
 public abstract class Perspective {
 
     public final float[] down = new float[] {0, -1, 0, 1};
-    public final float[] guide = new float[] {0, 0, 0, 1};
     public final float[] frustum = new float[2];
     public final float[] light = new float[4];
     public final float[] temp = new float[4];
@@ -65,17 +64,15 @@ public abstract class Perspective {
     public final Vector cameraLookAt = new Vector();
     public final Vector cameraUp = new Vector();
     public final Vector outlineScale = new Vector();
-    public final Vector guidePosition = new Vector();
     public final Vector tempVector = new Vector();
 
     public final Scene scene;
     public int size;// Outer dimension of puzzle cube
-    public boolean guideShown = false;
 
     public Puzzle puzzle;
     public Solution.Builder solution;
-    public SceneGraphNode basicRotation;
-    public SceneGraphNode lineRotation;
+    public SceneGraphNode rotationNode;
+    public boolean outlineEnabled = true;
 
     public static class Element {
         public SceneGraphNode root;
@@ -121,9 +118,6 @@ public abstract class Perspective {
         scene.putVector("camera-eye", cameraEye);
         scene.putVector("camera-look-at", cameraLookAt);
         scene.putVector("camera-up", cameraUp);
-        // Guide
-        scene.putFloatArray("guide", guide);
-        scene.putFloatArray("guide-colour", PerspectiveUtils.BLUE);
     }
 
     public Scene getScene() {
@@ -136,7 +130,7 @@ public abstract class Perspective {
 
     public void setSize(int size) {
         this.size = size;
-        // Set the outline big enough
+        // Set the outline scale
         outlineScale.set(size, size, size);
         float distance = (size * size) / 2f;
         System.out.println("Distance: " + distance);
@@ -182,14 +176,14 @@ public abstract class Perspective {
     }
 
     public void setOutline(String program, String mesh, String colour) {
-        if (lineRotation == null) {
+        if (!outlineEnabled) {
             return;
         }
         System.out.println("Outline " + program + " : " + mesh + " : " + colour);
-        String name = "outline0";
+        String name = "o0";
         String type = "outline";
         ScaleNode outlineScale = new ScaleNode("outline-scale");
-        lineRotation.addChild(outlineScale);
+        rotationNode.addChild(outlineScale);
         AttributeNode attributeNode = getAttributeNode(program, name, type, colour);
         System.out.println(attributeNode);
         System.out.println(java.util.Arrays.toString(attributeNode.getAttributes()));
@@ -204,36 +198,10 @@ public abstract class Perspective {
         es.add(element);
     }
 
-    public void setGuide(String program, String mesh, String colour) {
-        if (lineRotation == null) {
-            return;
-        }
-        System.out.println("Guide " + program + " : " + mesh + " : " + colour);
-        String name = "guide0";
-        String type = "guide";
-        TranslateNode guideTranslate = new TranslateNode("guide");
-        lineRotation.addChild(guideTranslate);
-        AttributeNode attributeNode = getAttributeNode(program, name, type, colour);
-        System.out.println(attributeNode);
-        System.out.println(java.util.Arrays.toString(attributeNode.getAttributes()));
-        guideTranslate.addChild(attributeNode);
-        attributeNode.addChild(getSceneGraphNode(program, name, type, mesh));
-
-        List<Element> es = getElements(type);
-        Element element = new Element();
-        element.name = name;
-        element.colour = colour;
-        element.mesh = mesh;
-        es.add(element);
-    }
-
     public void addElement(String program, String name, String type, String mesh, Vector location, String colour) {
-        if (basicRotation == null) {
-            return;
-        }
         System.out.println("Adding " + program + " : " + type + " : " + name + " : " + mesh + " : " + location + " : " + colour);
         TranslateNode translateNode = new TranslateNode(name);
-        basicRotation.addChild(translateNode);
+        rotationNode.addChild(translateNode);
         AttributeNode attributeNode = getAttributeNode(program, name, type, colour);
         translateNode.addChild(attributeNode);
         attributeNode.addChild(getSceneGraphNode(program, name, type, mesh));
@@ -265,7 +233,7 @@ public abstract class Perspective {
             }
             if (element != null) {
                 es.remove(element);
-                if (!basicRotation.removeChild(element.root)) {
+                if (!rotationNode.removeChild(element.root)) {
                     System.err.println("Could not remove " + element.name);
                 }
                 return;
@@ -278,14 +246,11 @@ public abstract class Perspective {
         System.out.println("Clearing all locations");
         elements.clear();
         linkedPortals.clear();
-        basicRotation.clear();
+        rotationNode.clear();
     }
 
     public void reset() {
         clearAllLocations();
-        if (lineRotation != null) {
-            lineRotation.clear();
-        }
         importPuzzle(puzzle);
     }
 
@@ -297,31 +262,25 @@ public abstract class Perspective {
 
         if (puzzle.hasOutline()) {
             Outline o = puzzle.getOutline();
-            setOutline("line", o.getMesh(), o.getColour());
-        } else {
-            setOutline("line", "box", "white");
+            setOutline("basic", o.getMesh(), o.getColour());
         }
 
         for (Block b : puzzle.getBlockList()) {
             Vector v = PerspectiveUtils.locationToVector(b.getLocation()).cap(-half, half);
-            // "block", "light-grey"
             addElement("basic", b.getName(), "block", b.getMesh(), v, b.getColour());
         }
         for (Goal g : puzzle.getGoalList()) {
             Vector v = PerspectiveUtils.locationToVector(g.getLocation()).cap(-half, half);
-            // "goal", "green"// TODO make goal yellow gold
             addElement("basic", g.getName(), "goal", g.getMesh(), v, g.getColour());
         }
         for (Portal p : puzzle.getPortalList()) {
             Vector v = PerspectiveUtils.locationToVector(p.getLocation()).cap(-half, half);
             Vector l = PerspectiveUtils.locationToVector(p.getLink()).cap(-half, half);
-            // "portal", "blue"
             addElement("basic", p.getName(), "portal", p.getMesh(), v, p.getColour());
             linkedPortals.put(v, l);
         }
         for (Sphere s : puzzle.getSphereList()) {
             Vector v = PerspectiveUtils.locationToVector(s.getLocation()).cap(1 - size, size - 1);
-            // "sphere", "green"
             addElement("basic", s.getName(), "sphere", s.getMesh(), v, s.getColour());
         }
     }
@@ -329,16 +288,12 @@ public abstract class Perspective {
     public Puzzle exportPuzzle() {
         Puzzle.Builder pb = Puzzle.newBuilder();
         List<Element> outlines = getElements("outline");
-        if (outlines != null) {
+        if (outlines != null && !outlines.isEmpty()) {
             for (Element o : outlines) {
                 pb.setOutline(Outline.newBuilder()
                     .setMesh(o.mesh)
                     .setColour(o.colour));
             }
-        } else {
-            pb.setOutline(Outline.newBuilder()
-                .setMesh("box")
-                .setColour("white"));
         }
         List<Element> blocks = getElements("block");
         if (blocks != null) {
@@ -396,8 +351,8 @@ public abstract class Perspective {
     }
 
     public void drop() {
-        synchronized (basicRotation) {
-            if (!basicRotation.hasAnimation()) {
+        synchronized (rotationNode) {
+            if (!rotationNode.hasAnimation()) {
                 System.out.println("drop");
                 if (inverseRotation.makeInverse(mainRotation)) {
                     Set<Vector> blocks = new HashSet<>();
@@ -421,7 +376,7 @@ public abstract class Perspective {
                             spheres.put(s.name, scene.getVector(s.name));
                         }
                     }
-                    basicRotation.setAnimation(new DropAnimation(size, inverseRotation, down, blocks, goals, linkedPortals, spheres) {
+                    rotationNode.setAnimation(new DropAnimation(size, inverseRotation, down, blocks, goals, linkedPortals, spheres) {
                         @Override
                         public void onComplete() {
                             boolean gameLost = false;
@@ -459,8 +414,8 @@ public abstract class Perspective {
     }
 
     public void rotate(float x, float y) {
-        synchronized (basicRotation) {
-            if (!basicRotation.hasAnimation()) {
+        synchronized (rotationNode) {
+            if (!rotationNode.hasAnimation()) {
                 System.out.println(String.format("rotate %f, %f", x, y));
                 if (inverseRotation.makeInverse(mainRotation)) {
                     // Y
@@ -481,13 +436,14 @@ public abstract class Perspective {
     }
 
     public void rotateToAxis() {
-        synchronized (basicRotation) {
-            if (!basicRotation.hasAnimation()) {
+        synchronized (rotationNode) {
+            if (!rotationNode.hasAnimation()) {
                 System.out.println("rotateToAxis");
                 if (inverseRotation.makeInverse(mainRotation)) {
-                    basicRotation.setAnimation(new RotateToAxisAnimation(mainRotation, inverseRotation, tempRotation, cameraEye, cameraUp) {
+                    rotationNode.setAnimation(new RotateToAxisAnimation(mainRotation, inverseRotation, tempRotation, cameraEye, cameraUp) {
                         @Override
                         public void onComplete() {
+                            solution.setScore(solution.getScore() + 1);
                             onTurnComplete();
                         }
                     });
@@ -499,11 +455,11 @@ public abstract class Perspective {
     }
 
     public void turn(int x, int y, int z) {
-        synchronized (basicRotation) {
-            if (!basicRotation.hasAnimation()) {
+        synchronized (rotationNode) {
+            if (!rotationNode.hasAnimation()) {
                 System.out.println(String.format("turn %d, %d, %d", x, y, z));
                 if (inverseRotation.makeInverse(mainRotation)) {
-                    basicRotation.setAnimation(new RotationAnimation(mainRotation, inverseRotation, tempRotation, 250, (float) Math.PI / 2.0f, x, y, z) {
+                    rotationNode.setAnimation(new RotationAnimation(mainRotation, inverseRotation, tempRotation, 250, (float) Math.PI / 2.0f, x, y, z) {
                         @Override
                         public void onComplete() {
                             onTurnComplete();
@@ -515,21 +471,4 @@ public abstract class Perspective {
             }
         }
     }
-
-    public void move(float[] m) {
-        System.out.println("Move: " + java.util.Arrays.toString(m));
-        if (inverseRotation.makeInverse(mainRotation)) {
-            float[] move = new float[4];
-            inverseRotation.multiply(m, move);
-            JoyUtils.round(move);
-            System.out.println("Move Axis: " + java.util.Arrays.toString(move));
-            guide[0] += move[0];
-            guide[1] += move[1];
-            guide[2] += move[2];
-            System.out.println("Guide: " + java.util.Arrays.toString(guide));
-        } else {
-            System.err.println("Matrix invert failed");
-        }
-    }
-
 }
