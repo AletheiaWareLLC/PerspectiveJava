@@ -58,31 +58,43 @@ public final class PerspectiveUtils {
 
     // Colour
     public static final float[] BLACK = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
-    public static final float[] BLUE = new float[] {0.168f, 0.332f, 0.613f, 1.0f};// 2B559D - 43,85,157
-    public static final float[] BROWN = new float[] {0.5f, 0.26f, 0.16f, 1.0f};// TODO
-    public static final float[] DARK_BLUE = new float[] {0.055f, 0.211f, 0.484f, 1.0f};// 0E367C - 14,54,124
-    public static final float[] DARK_GREY = new float[] {0.199f, 0.199f, 0.199f, 1.0f};// 333333 - 51,51,51
-    public static final float[] GREEN = new float[] {0.062f, 0.484f, 0.281f, 1.0f};// 107C48 - 16,124,72
-    public static final float[] GREY = new float[] {0.496f, 0.496f, 0.496f, 1.0f};// 7F7F7F - 127,127,127
-    public static final float[] LIGHT_BLUE = new float[] {0.281f, 0.453f, 0.746f, 1.0f};//  4874BF - 72,116,191
-    public static final float[] LIGHT_GREY = new float[] {0.797f, 0.797f, 0.797f, 1.0f};// CCCCCC - 204,204,204
-    public static final float[] ORANGE = new float[] {0.967f, 0.371f, 0.109f, 1.0f};// F75F1C - 247,95,28
-    public static final float[] PURPLE = new float[] {0.531f, 0.117f, 0.891f, 1.0f};// 881EE4 - 136,30,228
-    public static final float[] RED = new float[] {0.8f, 0.2f, 0.2f, 1.0f};// TODO
+    public static final float[] BLUE = new float[] {0.145f, 0.508f, 0.887f, 1.0f};// 2582E3 - 37,130,227
+    public static final float[] DARK_BLUE = new float[] {0.129f, 0.457f, 0.797f, 1.0f};// 2175CC - 33,117,204
+    public static final float[] DARK_GREEN = new float[] {0.133f, 0.586f, 0.289f, 1.0f};// 22964A - 34,150,74
+    public static final float[] DARK_GREY = new float[] {0.199f, 0.199f, 0.199f, 1.0f};
+    public static final float[] DARK_ORANGE = new float[] {0.891f, 0.406f, 0.012f, 1.0f};// E46803 - 228,104,3
+    public static final float[] DARK_RED = new float[] {0.813f, 0.176f, 0.176f, 1.0f};// D02D2D - 208,45,45
+    public static final float[] DARK_YELLOW = new float[] {0.887f, 0.73f, 0.059f, 1.0f};// E3BB0F - 227,187,15
+    public static final float[] GREEN = new float[] {0.148f, 0.652f, 0.324f, 1.0f};// 26A753 - 38,167,83
+    public static final float[] GREY = new float[] {0.496f, 0.496f, 0.496f, 1.0f};
+    public static final float[] LIGHT_BLUE = new float[] {0.227f, 0.555f, 0.895f, 1.0f};// 3A8EE5 - 58,142,229
+    public static final float[] LIGHT_GREEN = new float[] {0.23f, 0.684f, 0.391f, 1.0f};// 3BAF64 - 59,175,100
+    public static final float[] LIGHT_GREY = new float[] {0.797f, 0.797f, 0.797f, 1.0f};
+    public static final float[] LIGHT_ORANGE = new float[] {0.992f, 0.504f, 0.113f, 1.0f};// FE811D - 254,129,29
+    public static final float[] LIGHT_RED = new float[] {0.914f, 0.273f, 0.277f, 1.0f};// EA4647 - 234,70,71
+    public static final float[] LIGHT_YELLOW = new float[] {0.988f, 0.828f, 0.156f, 1.0f};// FDD428 - 253,212,40
+    public static final float[] ORANGE = new float[] {0.992f, 0.453f, 0.016f, 1.0f};// FE7404 - 254,116,4
+    public static final float[] RED = new float[] {0.906f, 0.195f, 0.199f, 1.0f};// E83233 - 232,50,51
     public static final float[] WHITE = new float[] {1.0f, 1.0f, 1.0f, 1.0f};
-    public static final float[] YELLOW = new float[] {0.9f, 0.9f, 0.0f, 1.0f};// TODO
+    public static final float[] YELLOW = new float[] {0.988f, 0.813f, 0.066f, 1.0f};// FDD011 - 253,208,17
     public static final float[][] COLOURS = {
         BLACK,
         BLUE,
-        BROWN,
         DARK_BLUE,
+        DARK_GREEN,
         DARK_GREY,
+        DARK_ORANGE,
+        DARK_RED,
+        DARK_YELLOW,
         GREEN,
         GREY,
         LIGHT_BLUE,
+        LIGHT_GREEN,
         LIGHT_GREY,
+        LIGHT_ORANGE,
+        LIGHT_RED,
+        LIGHT_YELLOW,
         ORANGE,
-        PURPLE,
         RED,
         WHITE,
         YELLOW,
@@ -92,15 +104,21 @@ public final class PerspectiveUtils {
     public static final String[] COLOUR_NAMES = {
         "black",
         "blue",
-        "brown",
         "dark-blue",
+        "dark-green",
         "dark-grey",
+        "dark-orange",
+        "dark-red",
+        "dark-yellow",
         "green",
         "grey",
         "light-blue",
+        "light-green",
         "light-grey",
+        "light-orange",
+        "light-red",
+        "light-yellow",
         "orange",
-        "purple",
         "red",
         "white",
         "yellow",
