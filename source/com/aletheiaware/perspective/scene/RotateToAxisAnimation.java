@@ -23,7 +23,7 @@ import com.aletheiaware.joy.utils.JoyUtils;
 
 public class RotateToAxisAnimation extends Animation {
 
-    private static final float MAX_ANGLE = (float) Math.PI / 15.0f;
+    private static final float MAX_ANGLE = (float) Math.PI / 20.0f;
     private static final float[][] AXES = { JoyUtils.X, JoyUtils.Y, JoyUtils.Z };
     private final float[][] axes = new float[3][4];
     private final Vector[] vectors = new Vector[3];
