@@ -72,6 +72,8 @@ public abstract class Perspective {
     public Puzzle puzzle;
     public Solution.Builder solution;
     public SceneGraphNode rotationNode;
+    public boolean gameOver = false;
+    public boolean gameWon = false;
     public boolean outlineEnabled = true;
 
     public static class Element {
@@ -152,6 +154,14 @@ public abstract class Perspective {
 
     public Solution getSolution() {
         return solution.build();
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public boolean wasGameWon() {
+        return gameWon;
     }
 
     public abstract void onDropComplete();
@@ -256,6 +266,8 @@ public abstract class Perspective {
 
     public void importPuzzle(Puzzle puzzle) {
         System.out.println("Importing: " + puzzle);
+        this.gameOver = false;
+        this.gameWon = false;
         this.puzzle = puzzle;
         this.solution = Solution.newBuilder();
         int half = size / 2;
@@ -355,6 +367,7 @@ public abstract class Perspective {
             if (!rotationNode.hasAnimation()) {
                 System.out.println("drop");
                 if (inverseRotation.makeInverse(mainRotation)) {
+                    // TODO improve this - creating new sets and maps each time is expensive
                     Set<Vector> blocks = new HashSet<>();
                     List<Element> bs = getElements("block");
                     if (bs != null) {
@@ -398,8 +411,12 @@ public abstract class Perspective {
                                         .build());
                             }
                             if (gameLost) {
+                                gameOver = true;
+                                gameWon = false;
                                 onGameLost();
                             } else if (gameWon) {
+                                gameOver = true;
+                                gameWon = true;
                                 onGameWon();
                             } else {
                                 onDropComplete();
