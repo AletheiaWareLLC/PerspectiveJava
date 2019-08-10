@@ -435,16 +435,20 @@ public abstract class Perspective {
             if (!rotationNode.hasAnimation()) {
                 System.out.println(String.format("rotate %f, %f", x, y));
                 if (inverseRotation.makeInverse(mainRotation)) {
-                    // Y
-                    inverseRotation.multiply(JoyUtils.Y, temp);
-                    tempVector.set(temp[0], temp[1], temp[2]);
-                    tempRotation.makeRotationAxis(y, tempVector);
-                    mainRotation.makeMultiplication(mainRotation, tempRotation);
-                    // X
-                    inverseRotation.multiply(JoyUtils.X, temp);
-                    tempVector.set(temp[0], temp[1], temp[2]);
-                    tempRotation.makeRotationAxis(x, tempVector);
-                    mainRotation.makeMultiplication(mainRotation, tempRotation);
+                    if (y != 0) {
+                        // Y
+                        inverseRotation.multiply(JoyUtils.Y, temp);
+                        tempVector.set(temp[0], temp[1], temp[2]);
+                        tempRotation.makeRotationAxis(y, tempVector);
+                        mainRotation.makeMultiplication(mainRotation, tempRotation);
+                    }
+                    if (x != 0) {
+                        // X
+                        inverseRotation.multiply(JoyUtils.X, temp);
+                        tempVector.set(temp[0], temp[1], temp[2]);
+                        tempRotation.makeRotationAxis(x, tempVector);
+                        mainRotation.makeMultiplication(mainRotation, tempRotation);
+                    }
                 } else {
                     System.err.println("Matrix invert failed");
                 }

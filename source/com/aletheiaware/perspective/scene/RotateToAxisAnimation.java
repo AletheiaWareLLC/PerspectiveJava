@@ -49,11 +49,15 @@ public class RotateToAxisAnimation extends Animation {
         float[] dotUp = new float[3];
         float[] absDotEye = new float[3];
         float[] absDotUp = new float[3];
+        // For each axis,
         for (int i = 0; i < 3; i++) {
+            // Multiply by the invert rotation matrix,
             inverseRotation.multiply(AXES[i], axes[i]);
+            // Make into a normalized vector,
             vectors[i] = new Vector();
             vectors[i].set(axes[i]);
             vectors[i].normalize();
+            // And calculate how far it is from the camera vectors
             dotEye[i] = cameraEye.dot(vectors[i]);
             dotUp[i] = cameraUp.dot(vectors[i]);
             absDotEye[i] = Math.abs(dotEye[i]);
@@ -65,6 +69,7 @@ public class RotateToAxisAnimation extends Animation {
         // System.out.println("Abs Dot Eye " + Arrays.toString(absDotEye));
         // System.out.println("Abs Dot Up " + Arrays.toString(absDotUp));
 
+        // Determine which is the closest to camera eye
         if (absDotEye[0] > absDotEye[1] && absDotEye[0] > absDotEye[2]) {
             closestAxisIndexEye = 0;
             absDotUp[0] = 0;// Make sure X cannot win up axis as well
@@ -76,6 +81,7 @@ public class RotateToAxisAnimation extends Animation {
             absDotUp[2] = 0;// Make sure Z cannot win up axis as well
         }
 
+        // Determine which is the closest to camera up
         if (absDotUp[0] > absDotUp[1] && absDotUp[0] > absDotUp[2]) {
             closestAxisIndexUp = 0;
         } else if (absDotUp[1] > absDotUp[2]) {
@@ -110,11 +116,13 @@ public class RotateToAxisAnimation extends Animation {
         angleEye = Math.min(MAX_ANGLE, angleEye);
         // System.out.println("Capped Eye Angle: " + angleEye);
 
-        Vector axisEye = cameraEye.cross(vectors[closestAxisIndexEye]);
-        // System.out.println("Eye Axis: " + axisEye);
+        if (angleEye != 0) {
+            Vector axisEye = cameraEye.cross(vectors[closestAxisIndexEye]);
+            // System.out.println("Eye Axis: " + axisEye);
 
-        tempRotation.makeRotationAxis(angleEye, axisEye);
-        mainRotation.makeMultiplication(mainRotation, tempRotation);
+            tempRotation.makeRotationAxis(angleEye, axisEye);
+            mainRotation.makeMultiplication(mainRotation, tempRotation);
+        }
 
         // Camera Up
         if (!inverseRotation.makeInverse(mainRotation)) {
@@ -130,11 +138,13 @@ public class RotateToAxisAnimation extends Animation {
         angleUp = Math.min(MAX_ANGLE, angleUp);
         // System.out.println("Capped Up Angle: " + angleUp);
 
-        Vector axisUp = cameraUp.cross(vectors[closestAxisIndexUp]);
-        // System.out.println("Up Axis: " + axisUp);
+        if (angleUp != 0) {
+            Vector axisUp = cameraUp.cross(vectors[closestAxisIndexUp]);
+            // System.out.println("Up Axis: " + axisUp);
 
-        tempRotation.makeRotationAxis(angleUp, axisUp);
-        mainRotation.makeMultiplication(mainRotation, tempRotation);
+            tempRotation.makeRotationAxis(angleUp, axisUp);
+            mainRotation.makeMultiplication(mainRotation, tempRotation);
+        }
 
         return angleEye == 0 && angleUp == 0;
     }
