@@ -269,6 +269,8 @@ public class Perspective {
         this.gameWon = false;
         this.puzzle = puzzle;
         this.solution = Solution.newBuilder();
+        model.makeIdentity();
+        mainRotation.makeIdentity();
         int half = size / 2;
 
         if (puzzle.hasOutline()) {
