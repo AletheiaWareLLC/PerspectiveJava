@@ -46,7 +46,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-public abstract class Perspective {
+public class Perspective {
+
+    public interface Callback {
+        void onDropComplete();
+        void onTurnComplete();
+        void onGameLost();
+        void onGameWon();
+        SceneGraphNode getSceneGraphNode(String program, String name, String type, String mesh);
+        AttributeNode getAttributeNode(String program, String name, String type, String colour);
+    }
 
     public final float[] down = new float[] {0, -1, 0, 1};
     public final float[] frustum = new float[2];
@@ -66,6 +75,7 @@ public abstract class Perspective {
     public final Vector outlineScale = new Vector();
     public final Vector tempVector = new Vector();
 
+    public final Callback callback;
     public final Scene scene;
     public int size;// Outer dimension of puzzle cube
 
@@ -87,7 +97,8 @@ public abstract class Perspective {
     // Holds portalA -> portalB and portalB -> portalA
     public final Map<Vector, Vector> linkedPortals = new HashMap<>();
 
-    public Perspective(Scene scene, int size) {
+    public Perspective(Callback callback, Scene scene, int size) {
+        this.callback = callback;
         this.scene = scene;
         this.size = size;
 
@@ -164,18 +175,6 @@ public abstract class Perspective {
         return gameWon;
     }
 
-    public abstract void onDropComplete();
-
-    public abstract void onTurnComplete();
-
-    public abstract void onGameLost();
-
-    public abstract void onGameWon();
-
-    public abstract SceneGraphNode getSceneGraphNode(String program, String name, String type, String mesh);
-
-    public abstract AttributeNode getAttributeNode(String program, String name, String type, String colour);
-
     public List<Element> getElements(String type) {
         List<Element> es = elements.get(type);
         if (es == null) {
@@ -194,11 +193,11 @@ public abstract class Perspective {
         String type = "outline";
         ScaleNode outlineScale = new ScaleNode("outline-scale");
         rotationNode.addChild(outlineScale);
-        AttributeNode attributeNode = getAttributeNode(program, name, type, colour);
+        AttributeNode attributeNode = callback.getAttributeNode(program, name, type, colour);
         System.out.println(attributeNode);
         System.out.println(java.util.Arrays.toString(attributeNode.getAttributes()));
         outlineScale.addChild(attributeNode);
-        attributeNode.addChild(getSceneGraphNode(program, name, type, mesh));
+        attributeNode.addChild(callback.getSceneGraphNode(program, name, type, mesh));
 
         List<Element> es = getElements(type);
         Element element = new Element();
@@ -212,9 +211,9 @@ public abstract class Perspective {
         System.out.println("Adding " + program + " : " + type + " : " + name + " : " + mesh + " : " + location + " : " + colour);
         TranslateNode translateNode = new TranslateNode(name);
         rotationNode.addChild(translateNode);
-        AttributeNode attributeNode = getAttributeNode(program, name, type, colour);
+        AttributeNode attributeNode = callback.getAttributeNode(program, name, type, colour);
         translateNode.addChild(attributeNode);
-        attributeNode.addChild(getSceneGraphNode(program, name, type, mesh));
+        attributeNode.addChild(callback.getSceneGraphNode(program, name, type, mesh));
 
         List<Element> es = getElements(type);
         Element element = new Element();
@@ -413,13 +412,13 @@ public abstract class Perspective {
                             if (gameLost) {
                                 gameOver = true;
                                 gameWon = false;
-                                onGameLost();
+                                callback.onGameLost();
                             } else if (gameWon) {
                                 gameOver = true;
                                 gameWon = true;
-                                onGameWon();
+                                callback.onGameWon();
                             } else {
-                                onDropComplete();
+                                callback.onDropComplete();
                             }
                         }
                     });
@@ -465,7 +464,7 @@ public abstract class Perspective {
                         @Override
                         public void onComplete() {
                             solution.setScore(solution.getScore() + 1);
-                            onTurnComplete();
+                            callback.onTurnComplete();
                         }
                     });
                 } else {
@@ -483,7 +482,7 @@ public abstract class Perspective {
                     rotationNode.setAnimation(new RotationAnimation(mainRotation, inverseRotation, tempRotation, 250, (float) Math.PI / 2.0f, x, y, z) {
                         @Override
                         public void onComplete() {
-                            onTurnComplete();
+                            callback.onTurnComplete();
                         }
                     });
                 } else {
