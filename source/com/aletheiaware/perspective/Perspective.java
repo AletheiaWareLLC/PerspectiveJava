@@ -106,7 +106,6 @@ public class Perspective {
 
         // Outline
         scene.putVector("outline-scale", outlineScale);
-        scene.putFloatArray("outline-colour", PerspectiveUtils.WHITE);
         // Colours
         for (int i = 0; i < PerspectiveUtils.COLOUR_NAMES.length; i++) {
             scene.putFloatArray(PerspectiveUtils.COLOUR_NAMES[i], PerspectiveUtils.COLOURS[i]);
@@ -256,11 +255,6 @@ public class Perspective {
         elements.clear();
         linkedPortals.clear();
         rotationNode.clear();
-    }
-
-    public void reset() {
-        clearAllLocations();
-        importPuzzle(puzzle);
     }
 
     public void importPuzzle(Puzzle puzzle) {
