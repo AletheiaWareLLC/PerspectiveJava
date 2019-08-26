@@ -91,7 +91,8 @@ public class DropAnimation extends Animation {
             dest.setZ(position.getZ() + (INCREMENT * dropAxis[2]));
             dest.round(1);// Round to 1 decimal place
             if (PerspectiveUtils.isCellCenter(dest)) {
-                if (PerspectiveUtils.isOutOfBounds(dest, size)) {
+                // Double size so ball is offscreen, well out of bounds
+                if (PerspectiveUtils.isOutOfBounds(dest, size * 2)) {
                     System.out.println("Ball out of bounds");
                     position.set(dest);
                     return true;
