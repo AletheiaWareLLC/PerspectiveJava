@@ -63,6 +63,7 @@ public final class PerspectiveUtils {
     public static final float[] DARK_GREEN = new float[] {0.133f, 0.586f, 0.289f, 1.0f};// 22964A - 34,150,74
     public static final float[] DARK_GREY = new float[] {0.199f, 0.199f, 0.199f, 1.0f};
     public static final float[] DARK_ORANGE = new float[] {0.891f, 0.406f, 0.012f, 1.0f};// E46803 - 228,104,3
+    public static final float[] DARK_PURPLE = new float[] {0.58f, 0.337f, 0.898f, 1.0f};// 9456E5 - 148,86,229
     public static final float[] DARK_RED = new float[] {0.813f, 0.176f, 0.176f, 1.0f};// D02D2D - 208,45,45
     public static final float[] DARK_YELLOW = new float[] {0.887f, 0.73f, 0.059f, 1.0f};// E3BB0F - 227,187,15
     public static final float[] GREEN = new float[] {0.148f, 0.652f, 0.324f, 1.0f};// 26A753 - 38,167,83
@@ -71,9 +72,11 @@ public final class PerspectiveUtils {
     public static final float[] LIGHT_GREEN = new float[] {0.23f, 0.684f, 0.391f, 1.0f};// 3BAF64 - 59,175,100
     public static final float[] LIGHT_GREY = new float[] {0.797f, 0.797f, 0.797f, 1.0f};
     public static final float[] LIGHT_ORANGE = new float[] {0.992f, 0.504f, 0.113f, 1.0f};// FE811D - 254,129,29
+    public static final float[] LIGHT_PURPLE = new float[] {0.682f, 0.435f, 1.0f, 1.0f};// AE6FFF - 174,111,255
     public static final float[] LIGHT_RED = new float[] {0.914f, 0.273f, 0.277f, 1.0f};// EA4647 - 234,70,71
     public static final float[] LIGHT_YELLOW = new float[] {0.988f, 0.828f, 0.156f, 1.0f};// FDD428 - 253,212,40
     public static final float[] ORANGE = new float[] {0.992f, 0.453f, 0.016f, 1.0f};// FE7404 - 254,116,4
+    public static final float[] PURPLE = new float[] {0.647f, 0.376f, 1.0f, 1.0f};// A560FF - 165,96,255
     public static final float[] RED = new float[] {0.906f, 0.195f, 0.199f, 1.0f};// E83233 - 232,50,51
     public static final float[] WHITE = new float[] {1.0f, 1.0f, 1.0f, 1.0f};
     public static final float[] YELLOW = new float[] {0.988f, 0.813f, 0.066f, 1.0f};// FDD011 - 253,208,17
@@ -84,6 +87,7 @@ public final class PerspectiveUtils {
         DARK_GREEN,
         DARK_GREY,
         DARK_ORANGE,
+        DARK_PURPLE,
         DARK_RED,
         DARK_YELLOW,
         GREEN,
@@ -92,9 +96,11 @@ public final class PerspectiveUtils {
         LIGHT_GREEN,
         LIGHT_GREY,
         LIGHT_ORANGE,
+        LIGHT_PURPLE,
         LIGHT_RED,
         LIGHT_YELLOW,
         ORANGE,
+        PURPLE,
         RED,
         WHITE,
         YELLOW,
@@ -108,6 +114,7 @@ public final class PerspectiveUtils {
         "dark-green",
         "dark-grey",
         "dark-orange",
+        "dark-purple",
         "dark-red",
         "dark-yellow",
         "green",
@@ -116,9 +123,11 @@ public final class PerspectiveUtils {
         "light-green",
         "light-grey",
         "light-orange",
+        "light-purple",
         "light-red",
         "light-yellow",
         "orange",
+        "purple",
         "red",
         "white",
         "yellow",
