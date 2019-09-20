@@ -14,7 +14,7 @@ Libraries
 Protocol Buffers
 
     cd <path/to/Perspective>
-    ./build.sh --javalite_out=<path/to/PerspectiveJava>/source/
+    ./build.sh --java_out=lite:<path/to/PerspectiveJava>/source/
 
 Build
 =====
