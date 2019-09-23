@@ -5,11 +5,11 @@ This is a Java implementation of Perspective based on Joy.
 
 Setup
 =====
-Libraries
+PerspectiveJava should be in the same parent directory as the following prerequisite projects;
 
-    mkdir libs
-    ln -s <joyjavalib> libs/JoyJava.jar
-    ln -s <protolib> libs/protobuf-lite-3.0.1.jar
+    JavaCommon
+    JoyJava
+    Perspective
 
 Protocol Buffers
 
