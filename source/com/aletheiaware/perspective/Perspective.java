@@ -208,6 +208,8 @@ public class Perspective {
 
     public void addElement(String program, String name, String type, String mesh, Vector location, String colour) {
         System.out.println("Adding " + program + " : " + type + " : " + name + " : " + mesh + " : " + location + " : " + colour);
+        scene.putVector(name, location);
+
         TranslateNode translateNode = new TranslateNode(name);
         rotationNode.addChild(translateNode);
         AttributeNode attributeNode = callback.getAttributeNode(program, name, type, colour);
@@ -220,7 +222,6 @@ public class Perspective {
         element.colour = colour;
         element.mesh = mesh;
         es.add(element);
-        scene.putVector(name, location);
     }
 
     public void clearLocation(Vector location) {
