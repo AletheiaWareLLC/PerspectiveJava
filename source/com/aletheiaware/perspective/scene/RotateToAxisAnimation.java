@@ -42,7 +42,7 @@ public class RotateToAxisAnimation extends Animation {
         this.mainRotation = mainRotation;
         this.inverseRotation = inverseRotation;
         this.tempRotation = tempRotation;
-        this.cameraEye = cameraEye.normalize();
+        this.cameraEye = cameraEye.clone().normalize();
         this.cameraUp = cameraUp.normalize();
 
         float[] dotEye = new float[3];
