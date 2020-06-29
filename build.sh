@@ -27,9 +27,10 @@ SOURCES=(
     source/com/aletheiaware/perspective/Perspective.java
     source/com/aletheiaware/perspective/PerspectiveProto.java
     source/com/aletheiaware/perspective/scene/DropAnimation.java
+    source/com/aletheiaware/perspective/scene/LaunchAnimation.java
     source/com/aletheiaware/perspective/scene/RotateToAxisAnimation.java
     source/com/aletheiaware/perspective/utils/PerspectiveUtils.java
 )
 
-javac -cp ../JoyJava/out/JoyJava.jar:../JavaCommon/libs/protobuf-java-3.9.1.jar ${SOURCES[*]} -d out/code
+javac -cp ../AletheiaWareCommonJava/out/AletheiaWareCommonJava.jar:../JoyJava/out/JoyJava.jar:../JavaCommon/libs/protobuf-java-3.9.1.jar ${SOURCES[*]} -d out/code
 jar cvf out/PerspectiveJava.jar -C out/code .

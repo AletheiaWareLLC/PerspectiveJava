@@ -16,6 +16,7 @@
 
 package com.aletheiaware.perspective.utils;
 
+import com.aletheiaware.common.utils.CommonUtils;
 import com.aletheiaware.joy.JoyProto.Shader;
 import com.aletheiaware.joy.scene.Vector;
 import com.aletheiaware.perspective.PerspectiveProto.Location;
@@ -36,6 +37,7 @@ import java.net.InetAddress;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.SignatureException;
@@ -55,6 +57,9 @@ import javax.crypto.NoSuchPaddingException;
 public final class PerspectiveUtils {
 
     public static final String TAG = "Perspective";
+
+    public static final int MAX_STARS = 5;
+    public static final String HASH_DIGEST = "SHA-512";
 
     // Colour
     public static final float[] BLACK = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
@@ -133,7 +138,67 @@ public final class PerspectiveUtils {
         "yellow",
     };
 
+    // World
+    public static final String WORLD_TUTORIAL = "tutorial";
+    public static final String WORLD_ONE = "world1";
+    public static final String WORLD_TWO = "world2";
+    public static final String WORLD_THREE = "world3";
+    public static final String WORLD_FOUR = "world4";
+    public static final String WORLD_FIVE = "world5";
+    public static final String WORLD_SIX = "world6";
+    public static final String WORLD_SEVEN = "world7";
+    public static final String WORLD_EIGHT = "world8";
+    public static final String WORLD_NINE = "world9";
+    public static final String WORLD_TEN = "world10";
+    public static final String WORLD_ELEVEN = "world11";
+    public static final String WORLD_TWELVE = "world12";
+    public static final String WORLD_THIRTEEN = "world13";
+    public static final String WORLD_FOURTEEN = "world14";
+    public static final String WORLD_FIFTEEN = "world15";
+    public static final String[] FREE_WORLDS = {
+            WORLD_TUTORIAL,
+            WORLD_ONE,
+            WORLD_TWO,
+            WORLD_THREE,
+            WORLD_FOUR,
+            WORLD_FIVE,
+            WORLD_SIX,
+    };
+    public static final String[] PAID_WORLDS = {
+            WORLD_SEVEN,
+            WORLD_EIGHT,
+            WORLD_NINE,
+            WORLD_TEN,
+            WORLD_ELEVEN,
+            WORLD_TWELVE,
+            WORLD_THIRTEEN,
+            WORLD_FOURTEEN,
+            WORLD_FIFTEEN,
+    };
+
     private PerspectiveUtils() {}
+
+    public static int scoreToStars(int score, int target) {
+        return Math.min(MAX_STARS, Math.max(MAX_STARS - (score - target), 0));
+    }
+
+    public static boolean isTutorial(String worldName) {
+        return WORLD_TUTORIAL.equals(worldName);
+    }
+
+    public static String getHash(byte[] data) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance(HASH_DIGEST);
+        digest.reset();
+        return new String(CommonUtils.encodeBase64URL(digest.digest(data)));
+    }
+
+    public static Puzzle getPuzzle(World world, int puzzle) {
+        int index = puzzle - 1;
+        if (index >= 0 && index < world.getPuzzleCount()) {
+            return world.getPuzzle(index);
+        }
+        return null;
+    }
 
     public static Puzzle readPuzzle(File file) throws IOException {
         FileInputStream in = null;
@@ -177,6 +242,44 @@ public final class PerspectiveUtils {
 
     public static void writePuzzle(OutputStream out, Puzzle puzzle) throws IOException {
         puzzle.writeDelimitedTo(out);
+    }
+
+    public static void saveSolution(File root, String world, String puzzle, Solution solution) throws IOException {
+        File directory = new File(new File(root, "solutions"), world);
+        if (!directory.exists()) {
+            if (!directory.mkdirs()) {
+                throw new IOException("Could not create directory: " + directory.getAbsolutePath());
+            }
+        }
+        File file = new File(directory, puzzle + ".pb");
+        if (file.exists()) {
+            Solution s = readSolution(file);
+            // Only overwrite existing solution if new solution has better (lower) score
+            if (s.getScore() < solution.getScore()) {
+                return;
+            }
+        }
+        try (FileOutputStream out = new FileOutputStream(file)) {
+            solution.writeDelimitedTo(out);
+        }
+    }
+
+    public static Solution loadSolution(File root, String world, String puzzle) throws IOException {
+        File directory = new File(new File(root, "solutions"), world);
+        if (directory.exists()) {
+            File file = new File(directory, puzzle + ".pb");
+            if (file.exists()) {
+                return readSolution(file);
+            }
+        }
+        return null;
+    }
+
+    public static void clearSolutions(File root) throws IOException {
+        File directory = new File(root, "solutions");
+        if (!CommonUtils.recursiveDelete(directory)) {
+            throw new IOException("Could not delete directory: " + directory.getAbsolutePath());
+        }
     }
 
     public static Solution readSolution(File file) throws IOException {

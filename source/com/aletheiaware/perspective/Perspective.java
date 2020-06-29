@@ -35,6 +35,7 @@ import com.aletheiaware.perspective.PerspectiveProto.Puzzle;
 import com.aletheiaware.perspective.PerspectiveProto.Sphere;
 import com.aletheiaware.perspective.PerspectiveProto.Solution;
 import com.aletheiaware.perspective.scene.DropAnimation;
+import com.aletheiaware.perspective.scene.LaunchAnimation;
 import com.aletheiaware.perspective.scene.RotateToAxisAnimation;
 import com.aletheiaware.perspective.utils.PerspectiveUtils;
 
@@ -58,6 +59,7 @@ public class Perspective {
     }
 
     public final float[] down = new float[] {0, -1, 0, 1};
+    public final float[] up = new float[] {0, 1, 0, 1};
     public final float[] frustum = new float[2];
     public final float[] light = new float[4];
     public final float[] temp = new float[4];
@@ -112,6 +114,8 @@ public class Perspective {
         }
         // Down
         scene.putFloatArray("down", down);
+        // Up
+        scene.putFloatArray("up", up);
         // Frustum
         scene.putFloatArray("frustum", frustum);
         // Light
@@ -386,6 +390,74 @@ public class Perspective {
                         }
                     }
                     rotationNode.setAnimation(new DropAnimation(size, inverseRotation, down, blocks, goals, linkedPortals, spheres) {
+                        @Override
+                        public void onComplete() {
+                            boolean gameLost = false;
+                            boolean gameWon = true;
+                            for (Entry<String, Vector> s : spheres.entrySet()) {
+                                String k = s.getKey();
+                                Vector v = s.getValue();
+                                if (PerspectiveUtils.isOutOfBounds(v, size)) {
+                                    // if any spheres are out of bounds - game over
+                                    gameLost = true;
+                                } else if (!goals.contains(v)) {
+                                    // if all spheres are in the goals - game won
+                                    gameWon = false;
+                                }
+                                System.out.println("Move: " + k + " " + v);
+                                solution.addMove(Move.newBuilder()
+                                        .setKey(k)
+                                        .setValue(PerspectiveUtils.vectorToLocation(v))
+                                        .build());
+                            }
+                            if (gameLost) {
+                                gameOver = true;
+                                gameWon = false;
+                                callback.onGameLost();
+                            } else if (gameWon) {
+                                gameOver = true;
+                                gameWon = true;
+                                callback.onGameWon();
+                            } else {
+                                callback.onDropComplete();
+                            }
+                        }
+                    });
+                } else {
+                    System.err.println("Matrix invert failed");
+                }
+            }
+        }
+    }
+
+    public void launch() {
+        synchronized (rotationNode) {
+            if (!rotationNode.hasAnimation()) {
+                System.out.println("launch");
+                if (inverseRotation.makeInverse(mainRotation)) {
+                    // TODO improve this - creating new sets and maps each time is expensive
+                    Set<Vector> blocks = new HashSet<>();
+                    List<Element> bs = getElements("block");
+                    if (bs != null) {
+                        for (Element b : bs) {
+                            blocks.add(scene.getVector(b.name));
+                        }
+                    }
+                    Set<Vector> goals = new HashSet<>();
+                    List<Element> gs = getElements("goal");
+                    if (gs != null) {
+                        for (Element g : gs) {
+                            goals.add(scene.getVector(g.name));
+                        }
+                    }
+                    Map<String, Vector> spheres = new HashMap<>();
+                    List<Element> ss = getElements("sphere");
+                    if (ss != null) {
+                        for (Element s : ss) {
+                            spheres.put(s.name, scene.getVector(s.name));
+                        }
+                    }
+                    rotationNode.setAnimation(new LaunchAnimation(size, inverseRotation, up, blocks, goals, linkedPortals, spheres) {
                         @Override
                         public void onComplete() {
                             boolean gameLost = false;
