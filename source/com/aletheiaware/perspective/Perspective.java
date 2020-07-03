@@ -55,7 +55,7 @@ public class Perspective {
         void onGameLost();
         void onGameWon();
         SceneGraphNode getSceneGraphNode(String program, String name, String type, String mesh);
-        AttributeNode getAttributeNode(String program, String name, String type, String colour);
+        AttributeNode getAttributeNode(String program, String name, String type, String colour, String texture, String material);
     }
 
     public final float[] down = new float[] {0, -1, 0, 1};
@@ -93,6 +93,8 @@ public class Perspective {
         public String name;
         public String mesh;
         public String colour;
+        public String texture;
+        public String material;
     }
     // Elements of the puzzle addressed type -> element
     public final Map<String, List<Element>> elements = new HashMap<>();
@@ -187,16 +189,16 @@ public class Perspective {
         return es;
     }
 
-    public void setOutline(String program, String mesh, String colour) {
+    public void setOutline(String program, String mesh, String colour, String texture, String material) {
         if (!outlineEnabled) {
             return;
         }
-        System.out.println("Outline " + program + " : " + mesh + " : " + colour);
+        System.out.println("Outline " + program + " : " + mesh + " : " + colour + " : " + texture + " : " + material);
         String name = "o0";
         String type = "outline";
         ScaleNode outlineScale = new ScaleNode("outline-scale");
         rotationNode.addChild(outlineScale);
-        AttributeNode attributeNode = callback.getAttributeNode(program, name, type, colour);
+        AttributeNode attributeNode = callback.getAttributeNode(program, name, type, colour, texture, material);
         System.out.println(attributeNode);
         System.out.println(java.util.Arrays.toString(attributeNode.getAttributes()));
         outlineScale.addChild(attributeNode);
@@ -205,26 +207,30 @@ public class Perspective {
         List<Element> es = getElements(type);
         Element element = new Element();
         element.name = name;
-        element.colour = colour;
         element.mesh = mesh;
+        element.colour = colour;
+        element.texture = texture;
+        element.material = material;
         es.add(element);
     }
 
-    public void addElement(String program, String name, String type, String mesh, Vector location, String colour) {
-        System.out.println("Adding " + program + " : " + type + " : " + name + " : " + mesh + " : " + location + " : " + colour);
+    public void addElement(String program, String name, String type, String mesh, Vector location, String colour, String texture, String material) {
+        System.out.println("Adding " + program + " : " + type + " : " + name + " : " + mesh + " : " + location + " : " + colour + " : " + texture + " : " + material);
         scene.putVector(name, location);
 
         TranslateNode translateNode = new TranslateNode(name);
         rotationNode.addChild(translateNode);
-        AttributeNode attributeNode = callback.getAttributeNode(program, name, type, colour);
+        AttributeNode attributeNode = callback.getAttributeNode(program, name, type, colour, texture, material);
         translateNode.addChild(attributeNode);
         attributeNode.addChild(callback.getSceneGraphNode(program, name, type, mesh));
 
         List<Element> es = getElements(type);
         Element element = new Element();
         element.name = name;
-        element.colour = colour;
         element.mesh = mesh;
+        element.colour = colour;
+        element.texture = texture;
+        element.material = material;
         es.add(element);
     }
 
@@ -274,26 +280,26 @@ public class Perspective {
 
         if (puzzle.hasOutline()) {
             Outline o = puzzle.getOutline();
-            setOutline("basic", o.getMesh(), o.getColour());
+            setOutline("basic", o.getMesh(), o.getColour(), o.getTexture(), o.getMaterial());
         }
 
         for (Block b : puzzle.getBlockList()) {
             Vector v = PerspectiveUtils.locationToVector(b.getLocation()).cap(-half, half);
-            addElement("basic", b.getName(), "block", b.getMesh(), v, b.getColour());
+            addElement("basic", b.getName(), "block", b.getMesh(), v, b.getColour(), b.getTexture(), b.getMaterial());
         }
         for (Goal g : puzzle.getGoalList()) {
             Vector v = PerspectiveUtils.locationToVector(g.getLocation()).cap(-half, half);
-            addElement("basic", g.getName(), "goal", g.getMesh(), v, g.getColour());
+            addElement("basic", g.getName(), "goal", g.getMesh(), v, g.getColour(), g.getTexture(), g.getMaterial());
         }
         for (Portal p : puzzle.getPortalList()) {
             Vector v = PerspectiveUtils.locationToVector(p.getLocation()).cap(-half, half);
             Vector l = PerspectiveUtils.locationToVector(p.getLink()).cap(-half, half);
-            addElement("basic", p.getName(), "portal", p.getMesh(), v, p.getColour());
+            addElement("basic", p.getName(), "portal", p.getMesh(), v, p.getColour(), p.getTexture(), p.getMaterial());
             linkedPortals.put(v, l);
         }
         for (Sphere s : puzzle.getSphereList()) {
             Vector v = PerspectiveUtils.locationToVector(s.getLocation()).cap(1 - size, size - 1);
-            addElement("basic", s.getName(), "sphere", s.getMesh(), v, s.getColour());
+            addElement("basic", s.getName(), "sphere", s.getMesh(), v, s.getColour(), s.getTexture(), s.getMaterial());
         }
     }
 
@@ -304,7 +310,9 @@ public class Perspective {
             for (Element o : outlines) {
                 pb.setOutline(Outline.newBuilder()
                     .setMesh(o.mesh)
-                    .setColour(o.colour));
+                    .setColour(o.colour)
+                    .setTexture(o.texture)
+                    .setMaterial(o.material));
             }
         }
         List<Element> blocks = getElements("block");
@@ -316,7 +324,9 @@ public class Perspective {
                     .setName(b.name)
                     .setMesh(b.mesh)
                     .setColour(b.colour)
-                    .setLocation(loc));
+                    .setLocation(loc)
+                    .setTexture(b.texture)
+                    .setMaterial(b.material));
             }
         }
         List<Element> goals = getElements("goal");
@@ -328,7 +338,9 @@ public class Perspective {
                     .setName(g.name)
                     .setMesh(g.mesh)
                     .setColour(g.colour)
-                    .setLocation(loc));
+                    .setLocation(loc)
+                    .setTexture(g.texture)
+                    .setMaterial(g.material));
             }
         }
         List<Element> portals = getElements("portal");
@@ -342,7 +354,9 @@ public class Perspective {
                     .setMesh(p.mesh)
                     .setColour(p.colour)
                     .setLocation(loc)
-                    .setLink(link));
+                    .setLink(link)
+                    .setTexture(p.texture)
+                    .setMaterial(p.material));
             }
         }
         List<Element> spheres = getElements("sphere");
@@ -354,7 +368,9 @@ public class Perspective {
                     .setName(s.name)
                     .setMesh(s.mesh)
                     .setColour(s.colour)
-                    .setLocation(loc));
+                    .setLocation(loc)
+                    .setTexture(s.texture)
+                    .setMaterial(s.material));
             }
         }
         Puzzle p = pb.build();
