@@ -18,6 +18,7 @@ package com.aletheiaware.perspective;
 
 import com.aletheiaware.joy.scene.AttributeNode;
 import com.aletheiaware.joy.scene.Matrix;
+import com.aletheiaware.joy.scene.MatrixTransformationNode;
 import com.aletheiaware.joy.scene.RotationAnimation;
 import com.aletheiaware.joy.scene.ScaleNode;
 import com.aletheiaware.joy.scene.Scene;
@@ -290,8 +291,16 @@ public class Perspective {
 
         TranslateNode translateNode = new TranslateNode(name);
         scenegraphs.get(shader).addChild(translateNode);
+        SceneGraphNode rootNode = translateNode;
+
+        if (type.equals("sphere")) {
+            MatrixTransformationNode rotation = new MatrixTransformationNode("inverse-rotation");
+            rootNode.addChild(rotation);
+            rootNode = rotation;
+        }
+
         AttributeNode attributeNode = callback.getAttributeNode(shader, name, type, colour, texture, material);
-        translateNode.addChild(attributeNode);
+        rootNode.addChild(attributeNode);
         attributeNode.addChild(callback.getSceneGraphNode(shader, name, type, mesh));
 
         List<Element> es = getElements(type);
