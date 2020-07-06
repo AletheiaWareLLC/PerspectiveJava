@@ -32,6 +32,7 @@ import com.aletheiaware.perspective.PerspectiveProto.Move;
 import com.aletheiaware.perspective.PerspectiveProto.Outline;
 import com.aletheiaware.perspective.PerspectiveProto.Portal;
 import com.aletheiaware.perspective.PerspectiveProto.Puzzle;
+import com.aletheiaware.perspective.PerspectiveProto.Sky;
 import com.aletheiaware.perspective.PerspectiveProto.Sphere;
 import com.aletheiaware.perspective.PerspectiveProto.Solution;
 import com.aletheiaware.perspective.scene.DropAnimation;
@@ -76,6 +77,7 @@ public class Perspective {
     public final Vector cameraLookAt = new Vector();
     public final Vector cameraUp = new Vector();
     public final Vector outlineScale = new Vector();
+    public final Vector skyScale = new Vector();
     public final Vector tempVector = new Vector();
 
     public final Callback callback;
@@ -89,6 +91,7 @@ public class Perspective {
     public boolean gameOver = false;
     public boolean gameWon = false;
     public boolean outlineEnabled = true;
+    public boolean skyEnabled = true;
 
     public static class Element {
         public SceneGraphNode root;
@@ -113,6 +116,8 @@ public class Perspective {
 
         // Outline
         scene.putVector("outline-scale", outlineScale);
+        // Sky
+        scene.putVector("sky-scale", skyScale);
         // Colours
         for (int i = 0; i < PerspectiveUtils.COLOUR_NAMES.length; i++) {
             scene.putFloatArray(PerspectiveUtils.COLOUR_NAMES[i], PerspectiveUtils.COLOURS[i]);
@@ -176,6 +181,8 @@ public class Perspective {
         outlineScale.set(size, size, size);
         float distance = (size * size) / 2f;
         System.out.println("Distance: " + distance);
+        // Set the sky scale
+        skyScale.set(distance*2f, distance*2f, distance*2f);
         // Crop the scene proportionally
         frustum[0] = size * 0.5f;
         frustum[1] = distance + size;
@@ -229,6 +236,35 @@ public class Perspective {
         System.out.println(attributeNode);
         System.out.println(java.util.Arrays.toString(attributeNode.getAttributes()));
         outlineScale.addChild(attributeNode);
+        attributeNode.addChild(callback.getSceneGraphNode(shader, name, type, mesh));
+
+        List<Element> es = getElements(type);
+        Element element = new Element();
+        element.name = name;
+        element.mesh = mesh;
+        element.colour = colour;
+        element.texture = texture;
+        element.material = material;
+        element.shader = shader;
+        es.add(element);
+    }
+
+    public void setSky(String shader, String mesh, String colour, String texture, String material) {
+        if (!skyEnabled) {
+            return;
+        }
+        if (shader == null || shader.isEmpty()) {
+            shader = getDefaultShader();
+        }
+        System.out.println("Sky " + shader + " : " + mesh + " : " + colour + " : " + texture + " : " + material);
+        String name = "sky0";
+        String type = "sky";
+        ScaleNode skyScale = new ScaleNode("sky-scale");
+        scenegraphs.get(shader).addChild(skyScale);
+        AttributeNode attributeNode = callback.getAttributeNode(shader, name, type, colour, texture, material);
+        System.out.println(attributeNode);
+        System.out.println(java.util.Arrays.toString(attributeNode.getAttributes()));
+        skyScale.addChild(attributeNode);
         attributeNode.addChild(callback.getSceneGraphNode(shader, name, type, mesh));
 
         List<Element> es = getElements(type);
@@ -320,6 +356,11 @@ public class Perspective {
             setOutline(o.getShader(), o.getMesh(), o.getColour(), o.getTexture(), o.getMaterial());
         }
 
+        if (puzzle.hasSky()) {
+            Sky o = puzzle.getSky();
+            setSky(o.getShader(), o.getMesh(), o.getColour(), o.getTexture(), o.getMaterial());
+        }
+
         for (Block b : puzzle.getBlockList()) {
             Vector v = PerspectiveUtils.locationToVector(b.getLocation()).cap(-half, half);
             addElement(b.getShader(), b.getName(), "block", b.getMesh(), v, b.getColour(), b.getTexture(), b.getMaterial());
@@ -351,6 +392,17 @@ public class Perspective {
                     .setTexture(o.texture)
                     .setMaterial(o.material)
                     .setShader(o.shader));
+            }
+        }
+        List<Element> skys = getElements("sky");
+        if (skys != null && !skys.isEmpty()) {
+            for (Element s : skys) {
+                pb.setSky(Sky.newBuilder()
+                    .setMesh(s.mesh)
+                    .setColour(s.colour)
+                    .setTexture(s.texture)
+                    .setMaterial(s.material)
+                    .setShader(s.shader));
             }
         }
         List<Element> blocks = getElements("block");
