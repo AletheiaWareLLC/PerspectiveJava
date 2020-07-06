@@ -50,12 +50,13 @@ import java.util.Set;
 public class Perspective {
 
     public interface Callback {
-        void onDropComplete();
+        void onTravelStart();
+        void onTravelComplete();
         void onTurnComplete();
         void onGameLost();
         void onGameWon();
-        SceneGraphNode getSceneGraphNode(String program, String name, String type, String mesh);
-        AttributeNode getAttributeNode(String program, String name, String type, String colour, String texture, String material);
+        SceneGraphNode getSceneGraphNode(String shader, String name, String type, String mesh);
+        AttributeNode getAttributeNode(String shader, String name, String type, String colour, String texture, String material);
     }
 
     public final float[] down = new float[] {0, -1, 0, 1};
@@ -83,7 +84,8 @@ public class Perspective {
 
     public Puzzle puzzle;
     public Solution.Builder solution;
-    public SceneGraphNode rotationNode;
+    public Map<String, SceneGraphNode> scenegraphs = new HashMap<>();
+    public String sphereShader;
     public boolean gameOver = false;
     public boolean gameWon = false;
     public boolean outlineEnabled = true;
@@ -95,6 +97,7 @@ public class Perspective {
         public String colour;
         public String texture;
         public String material;
+        public String shader;
     }
     // Elements of the puzzle addressed type -> element
     public final Map<String, List<Element>> elements = new HashMap<>();
@@ -146,6 +149,23 @@ public class Perspective {
         return scene;
     }
 
+    public String getDefaultShader() {
+        for (String shader : new String[]{
+            "basic",
+            "main",
+        }) {
+            if (scenegraphs.containsKey(shader)) {
+                return shader;
+            }
+        }
+        System.err.println("Default Shader not found: " + scenegraphs.keySet());
+        return null;
+    }
+
+    public SceneGraphNode getSceneGraphNode() {
+        return scenegraphs.get(sphereShader);
+    }
+
     public int getSize() {
         return size;
     }
@@ -193,20 +213,23 @@ public class Perspective {
         return es;
     }
 
-    public void setOutline(String program, String mesh, String colour, String texture, String material) {
+    public void setOutline(String shader, String mesh, String colour, String texture, String material) {
         if (!outlineEnabled) {
             return;
         }
-        System.out.println("Outline " + program + " : " + mesh + " : " + colour + " : " + texture + " : " + material);
+        if (shader == null || shader.isEmpty()) {
+            shader = getDefaultShader();
+        }
+        System.out.println("Outline " + shader + " : " + mesh + " : " + colour + " : " + texture + " : " + material);
         String name = "o0";
         String type = "outline";
         ScaleNode outlineScale = new ScaleNode("outline-scale");
-        rotationNode.addChild(outlineScale);
-        AttributeNode attributeNode = callback.getAttributeNode(program, name, type, colour, texture, material);
+        scenegraphs.get(shader).addChild(outlineScale);
+        AttributeNode attributeNode = callback.getAttributeNode(shader, name, type, colour, texture, material);
         System.out.println(attributeNode);
         System.out.println(java.util.Arrays.toString(attributeNode.getAttributes()));
         outlineScale.addChild(attributeNode);
-        attributeNode.addChild(callback.getSceneGraphNode(program, name, type, mesh));
+        attributeNode.addChild(callback.getSceneGraphNode(shader, name, type, mesh));
 
         List<Element> es = getElements(type);
         Element element = new Element();
@@ -215,18 +238,25 @@ public class Perspective {
         element.colour = colour;
         element.texture = texture;
         element.material = material;
+        element.shader = shader;
         es.add(element);
     }
 
-    public void addElement(String program, String name, String type, String mesh, Vector location, String colour, String texture, String material) {
-        System.out.println("Adding " + program + " : " + type + " : " + name + " : " + mesh + " : " + location + " : " + colour + " : " + texture + " : " + material);
+    public void addElement(String shader, String name, String type, String mesh, Vector location, String colour, String texture, String material) {
+        if (shader == null || shader.isEmpty()) {
+            shader = getDefaultShader();
+        }
+        if (type.equals("sphere")) {
+            sphereShader = shader;
+        }
+        System.out.println("Adding " + shader + " : " + type + " : " + name + " : " + mesh + " : " + location + " : " + colour + " : " + texture + " : " + material);
         scene.putVector(name, location);
 
         TranslateNode translateNode = new TranslateNode(name);
-        rotationNode.addChild(translateNode);
-        AttributeNode attributeNode = callback.getAttributeNode(program, name, type, colour, texture, material);
+        scenegraphs.get(shader).addChild(translateNode);
+        AttributeNode attributeNode = callback.getAttributeNode(shader, name, type, colour, texture, material);
         translateNode.addChild(attributeNode);
-        attributeNode.addChild(callback.getSceneGraphNode(program, name, type, mesh));
+        attributeNode.addChild(callback.getSceneGraphNode(shader, name, type, mesh));
 
         List<Element> es = getElements(type);
         Element element = new Element();
@@ -235,6 +265,7 @@ public class Perspective {
         element.colour = colour;
         element.texture = texture;
         element.material = material;
+        element.shader = shader;
         es.add(element);
     }
 
@@ -256,7 +287,7 @@ public class Perspective {
             }
             if (element != null) {
                 es.remove(element);
-                if (!rotationNode.removeChild(element.root)) {
+                if (!scenegraphs.get(element.shader).removeChild(element.root)) {
                     System.err.println("Could not remove " + element.name);
                 }
                 return;
@@ -269,7 +300,9 @@ public class Perspective {
         System.out.println("Clearing all locations");
         elements.clear();
         linkedPortals.clear();
-        rotationNode.clear();
+        for (SceneGraphNode scene : scenegraphs.values()) {
+            scene.clear();
+        }
     }
 
     public void importPuzzle(Puzzle puzzle) {
@@ -284,26 +317,26 @@ public class Perspective {
 
         if (puzzle.hasOutline()) {
             Outline o = puzzle.getOutline();
-            setOutline("basic", o.getMesh(), o.getColour(), o.getTexture(), o.getMaterial());
+            setOutline(o.getShader(), o.getMesh(), o.getColour(), o.getTexture(), o.getMaterial());
         }
 
         for (Block b : puzzle.getBlockList()) {
             Vector v = PerspectiveUtils.locationToVector(b.getLocation()).cap(-half, half);
-            addElement("basic", b.getName(), "block", b.getMesh(), v, b.getColour(), b.getTexture(), b.getMaterial());
+            addElement(b.getShader(), b.getName(), "block", b.getMesh(), v, b.getColour(), b.getTexture(), b.getMaterial());
         }
         for (Goal g : puzzle.getGoalList()) {
             Vector v = PerspectiveUtils.locationToVector(g.getLocation()).cap(-half, half);
-            addElement("basic", g.getName(), "goal", g.getMesh(), v, g.getColour(), g.getTexture(), g.getMaterial());
+            addElement(g.getShader(), g.getName(), "goal", g.getMesh(), v, g.getColour(), g.getTexture(), g.getMaterial());
         }
         for (Portal p : puzzle.getPortalList()) {
             Vector v = PerspectiveUtils.locationToVector(p.getLocation()).cap(-half, half);
             Vector l = PerspectiveUtils.locationToVector(p.getLink()).cap(-half, half);
-            addElement("basic", p.getName(), "portal", p.getMesh(), v, p.getColour(), p.getTexture(), p.getMaterial());
+            addElement(p.getShader(), p.getName(), "portal", p.getMesh(), v, p.getColour(), p.getTexture(), p.getMaterial());
             linkedPortals.put(v, l);
         }
         for (Sphere s : puzzle.getSphereList()) {
             Vector v = PerspectiveUtils.locationToVector(s.getLocation()).cap(1 - size, size - 1);
-            addElement("basic", s.getName(), "sphere", s.getMesh(), v, s.getColour(), s.getTexture(), s.getMaterial());
+            addElement(s.getShader(), s.getName(), "sphere", s.getMesh(), v, s.getColour(), s.getTexture(), s.getMaterial());
         }
     }
 
@@ -316,7 +349,8 @@ public class Perspective {
                     .setMesh(o.mesh)
                     .setColour(o.colour)
                     .setTexture(o.texture)
-                    .setMaterial(o.material));
+                    .setMaterial(o.material)
+                    .setShader(o.shader));
             }
         }
         List<Element> blocks = getElements("block");
@@ -330,7 +364,8 @@ public class Perspective {
                     .setColour(b.colour)
                     .setLocation(loc)
                     .setTexture(b.texture)
-                    .setMaterial(b.material));
+                    .setMaterial(b.material)
+                    .setShader(b.shader));
             }
         }
         List<Element> goals = getElements("goal");
@@ -344,7 +379,8 @@ public class Perspective {
                     .setColour(g.colour)
                     .setLocation(loc)
                     .setTexture(g.texture)
-                    .setMaterial(g.material));
+                    .setMaterial(g.material)
+                    .setShader(g.shader));
             }
         }
         List<Element> portals = getElements("portal");
@@ -360,7 +396,8 @@ public class Perspective {
                     .setLocation(loc)
                     .setLink(link)
                     .setTexture(p.texture)
-                    .setMaterial(p.material));
+                    .setMaterial(p.material)
+                    .setShader(p.shader));
             }
         }
         List<Element> spheres = getElements("sphere");
@@ -374,7 +411,8 @@ public class Perspective {
                     .setColour(s.colour)
                     .setLocation(loc)
                     .setTexture(s.texture)
-                    .setMaterial(s.material));
+                    .setMaterial(s.material)
+                    .setShader(s.shader));
             }
         }
         Puzzle p = pb.build();
@@ -383,9 +421,11 @@ public class Perspective {
     }
 
     public void drop() {
-        synchronized (rotationNode) {
-            if (!rotationNode.hasAnimation()) {
+        SceneGraphNode node = getSceneGraphNode();
+        synchronized (node) {
+            if (!node.hasAnimation()) {
                 System.out.println("drop");
+                callback.onTravelStart();
                 if (inverseRotation.makeInverse(mainRotation)) {
                     // TODO improve this - creating new sets and maps each time is expensive
                     Set<Vector> blocks = new HashSet<>();
@@ -409,7 +449,7 @@ public class Perspective {
                             spheres.put(s.name, scene.getVector(s.name));
                         }
                     }
-                    rotationNode.setAnimation(new DropAnimation(size, inverseRotation, down, blocks, goals, linkedPortals, spheres) {
+                    node.setAnimation(new DropAnimation(size, inverseRotation, down, blocks, goals, linkedPortals, spheres) {
                         @Override
                         public void onComplete() {
                             boolean gameLost = false;
@@ -439,7 +479,7 @@ public class Perspective {
                                 gameWon = true;
                                 callback.onGameWon();
                             } else {
-                                callback.onDropComplete();
+                                callback.onTravelComplete();
                             }
                         }
                     });
@@ -451,9 +491,11 @@ public class Perspective {
     }
 
     public void launch() {
-        synchronized (rotationNode) {
-            if (!rotationNode.hasAnimation()) {
+        SceneGraphNode node = getSceneGraphNode();
+        synchronized (node) {
+            if (!node.hasAnimation()) {
                 System.out.println("launch");
+                callback.onTravelStart();
                 if (inverseRotation.makeInverse(mainRotation)) {
                     // TODO improve this - creating new sets and maps each time is expensive
                     Set<Vector> blocks = new HashSet<>();
@@ -477,7 +519,7 @@ public class Perspective {
                             spheres.put(s.name, scene.getVector(s.name));
                         }
                     }
-                    rotationNode.setAnimation(new LaunchAnimation(size, inverseRotation, up, blocks, goals, linkedPortals, spheres) {
+                    node.setAnimation(new LaunchAnimation(size, inverseRotation, up, blocks, goals, linkedPortals, spheres) {
                         @Override
                         public void onComplete() {
                             boolean gameLost = false;
@@ -507,7 +549,7 @@ public class Perspective {
                                 gameWon = true;
                                 callback.onGameWon();
                             } else {
-                                callback.onDropComplete();
+                                callback.onTravelComplete();
                             }
                         }
                     });
@@ -519,8 +561,9 @@ public class Perspective {
     }
 
     public void rotate(float x, float y) {
-        synchronized (rotationNode) {
-            if (!rotationNode.hasAnimation()) {
+        SceneGraphNode node = getSceneGraphNode();
+        synchronized (node) {
+            if (!node.hasAnimation()) {
                 System.out.println(String.format("rotate %f, %f", x, y));
                 if (inverseRotation.makeInverse(mainRotation)) {
                     if (y != 0) {
@@ -545,11 +588,12 @@ public class Perspective {
     }
 
     public void rotateToAxis() {
-        synchronized (rotationNode) {
-            if (!rotationNode.hasAnimation()) {
+        SceneGraphNode node = getSceneGraphNode();
+        synchronized (node) {
+            if (!node.hasAnimation()) {
                 System.out.println("rotateToAxis");
                 if (inverseRotation.makeInverse(mainRotation)) {
-                    rotationNode.setAnimation(new RotateToAxisAnimation(mainRotation, inverseRotation, tempRotation, cameraEye, cameraUp) {
+                    node.setAnimation(new RotateToAxisAnimation(mainRotation, inverseRotation, tempRotation, cameraEye, cameraUp) {
                         @Override
                         public void onComplete() {
                             solution.setScore(solution.getScore() + 1);
@@ -564,11 +608,12 @@ public class Perspective {
     }
 
     public void turn(int x, int y, int z) {
-        synchronized (rotationNode) {
-            if (!rotationNode.hasAnimation()) {
+        SceneGraphNode node = getSceneGraphNode();
+        synchronized (node) {
+            if (!node.hasAnimation()) {
                 System.out.println(String.format("turn %d, %d, %d", x, y, z));
                 if (inverseRotation.makeInverse(mainRotation)) {
-                    rotationNode.setAnimation(new RotationAnimation(mainRotation, inverseRotation, tempRotation, 250, (float) Math.PI / 2.0f, x, y, z) {
+                    node.setAnimation(new RotationAnimation(mainRotation, inverseRotation, tempRotation, 250, (float) Math.PI / 2.0f, x, y, z) {
                         @Override
                         public void onComplete() {
                             callback.onTurnComplete();

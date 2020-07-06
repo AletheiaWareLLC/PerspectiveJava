@@ -27,8 +27,7 @@ import java.util.Set;
 
 public class LaunchAnimation extends Animation {
 
-    private static final float ACCELERATION = 5f;
-    private static final float DECELERATION = 3f;
+    private static final float ACCELERATION = 3f;
     private static final float INCREMENT = 0.1f;
 
     private final Vector dest = new Vector();
