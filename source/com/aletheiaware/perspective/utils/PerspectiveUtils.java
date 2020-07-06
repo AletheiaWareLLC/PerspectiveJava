@@ -138,6 +138,29 @@ public final class PerspectiveUtils {
         "yellow",
     };
 
+    // Material
+    public static final float[] MATTE = new float[]{0.1f, 0.1f, 0.1f};
+    public static final float[] MEDIUM = new float[]{0.5f, 0.5f, 0.5f};
+    public static final float[] GLOSSY = new float[]{1.0f, 1.0f, 1.0f};
+    public static final float[] AMBIENT_ONLY = new float[]{1.0f, 0.0f, 0.0f};
+    public static final float[] DIFFUSE_ONLY = new float[]{0.0f, 1.0f, 0.0f};
+    public static final float[] SPECULAR_ONLY = new float[]{0.0f, 0.0f, 1.0f};
+    public static final float[][] MATERIALS = {
+        MATTE,
+        MEDIUM,
+        GLOSSY,
+        AMBIENT_ONLY,
+        DIFFUSE_ONLY,
+        SPECULAR_ONLY,
+    };
+    public static final String[] MATERIAL_NAMES = {
+        "medium",
+        "glossy",
+        "ambient-only",
+        "diffuse-only",
+        "specular-only",
+    };
+
     // World
     public static final String WORLD_TUTORIAL = "tutorial";
     public static final String WORLD_ONE = "world1";

@@ -114,6 +114,10 @@ public class Perspective {
         for (int i = 0; i < PerspectiveUtils.COLOUR_NAMES.length; i++) {
             scene.putFloatArray(PerspectiveUtils.COLOUR_NAMES[i], PerspectiveUtils.COLOURS[i]);
         }
+        // Materials
+        for (int i = 0; i < PerspectiveUtils.MATERIAL_NAMES.length; i++) {
+            scene.putFloatArray(PerspectiveUtils.MATERIAL_NAMES[i], PerspectiveUtils.MATERIALS[i]);
+        }
         // Down
         scene.putFloatArray("down", down);
         // Up
