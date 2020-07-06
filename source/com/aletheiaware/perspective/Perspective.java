@@ -185,7 +185,7 @@ public class Perspective {
         skyScale.set(distance*2f, distance*2f, distance*2f);
         // Crop the scene proportionally
         frustum[0] = size * 0.5f;
-        frustum[1] = distance + size;
+        frustum[1] = distance*2f;
         // Ensure light is always outside
         light[0] = 0;
         light[1] = 0;
