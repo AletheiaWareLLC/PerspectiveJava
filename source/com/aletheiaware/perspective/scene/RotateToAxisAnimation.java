@@ -146,6 +146,10 @@ public class RotateToAxisAnimation extends Animation {
             mainRotation.makeMultiplication(mainRotation, tempRotation);
         }
 
+        if (!inverseRotation.makeInverse(mainRotation)) {
+            System.err.println("Matrix invert failed");
+        }
+
         return angleEye == 0 && angleUp == 0;
     }
 }

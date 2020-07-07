@@ -358,6 +358,7 @@ public class Perspective {
         this.solution = Solution.newBuilder();
         model.makeIdentity();
         mainRotation.makeIdentity();
+        inverseRotation.makeIdentity();
         int half = size / 2;
 
         if (puzzle.hasOutline()) {
@@ -640,6 +641,9 @@ public class Perspective {
                         tempVector.set(temp[0], temp[1], temp[2]);
                         tempRotation.makeRotationAxis(x, tempVector);
                         mainRotation.makeMultiplication(mainRotation, tempRotation);
+                    }
+                    if (!inverseRotation.makeInverse(mainRotation)) {
+                        System.err.println("Matrix invert failed");
                     }
                 } else {
                     System.err.println("Matrix invert failed");
