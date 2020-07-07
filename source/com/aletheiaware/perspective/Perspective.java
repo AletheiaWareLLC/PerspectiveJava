@@ -169,6 +169,9 @@ public class Perspective {
     }
 
     public SceneGraphNode getSceneGraphNode() {
+        if (sphereShader == null || sphereShader.isEmpty()) {
+            sphereShader = getDefaultShader();
+        }
         return scenegraphs.get(sphereShader);
     }
 
