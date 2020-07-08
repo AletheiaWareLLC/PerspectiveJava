@@ -16,9 +16,7 @@
 
 package com.aletheiaware.perspective;
 
-import com.aletheiaware.joy.scene.AttributeNode;
 import com.aletheiaware.joy.scene.Matrix;
-import com.aletheiaware.joy.scene.MatrixTransformationNode;
 import com.aletheiaware.joy.scene.RotationAnimation;
 import com.aletheiaware.joy.scene.ScaleNode;
 import com.aletheiaware.joy.scene.Scene;
@@ -57,8 +55,7 @@ public class Perspective {
         void onTurnComplete();
         void onGameLost();
         void onGameWon();
-        SceneGraphNode getSceneGraphNode(String shader, String name, String type, String mesh);
-        AttributeNode getAttributeNode(String shader, String name, String type, String colour, String texture, String material);
+        SceneGraphNode getSceneGraphNode(String shader, String name, String type, String mesh, String colour, String texture, String material);
     }
 
     public final float[] down = new float[] {0, -1, 0, 1};
@@ -236,11 +233,7 @@ public class Perspective {
         String type = "outline";
         ScaleNode outlineScale = new ScaleNode("outline-scale");
         scenegraphs.get(shader).addChild(outlineScale);
-        AttributeNode attributeNode = callback.getAttributeNode(shader, name, type, colour, texture, material);
-        System.out.println(attributeNode);
-        System.out.println(java.util.Arrays.toString(attributeNode.getAttributes()));
-        outlineScale.addChild(attributeNode);
-        attributeNode.addChild(callback.getSceneGraphNode(shader, name, type, mesh));
+        outlineScale.addChild(callback.getSceneGraphNode(shader, name, type, mesh, colour, texture, material));
 
         List<Element> es = getElements(type);
         Element element = new Element();
@@ -265,11 +258,7 @@ public class Perspective {
         String type = "sky";
         ScaleNode skyScale = new ScaleNode("sky-scale");
         scenegraphs.get(shader).addChild(skyScale);
-        AttributeNode attributeNode = callback.getAttributeNode(shader, name, type, colour, texture, material);
-        System.out.println(attributeNode);
-        System.out.println(java.util.Arrays.toString(attributeNode.getAttributes()));
-        skyScale.addChild(attributeNode);
-        attributeNode.addChild(callback.getSceneGraphNode(shader, name, type, mesh));
+        skyScale.addChild(callback.getSceneGraphNode(shader, name, type, mesh, colour, texture, material));
 
         List<Element> es = getElements(type);
         Element element = new Element();
@@ -294,17 +283,7 @@ public class Perspective {
 
         TranslateNode translateNode = new TranslateNode(name);
         scenegraphs.get(shader).addChild(translateNode);
-        SceneGraphNode rootNode = translateNode;
-
-        if (type.equals("sphere")) {
-            MatrixTransformationNode rotation = new MatrixTransformationNode("inverse-rotation");
-            rootNode.addChild(rotation);
-            rootNode = rotation;
-        }
-
-        AttributeNode attributeNode = callback.getAttributeNode(shader, name, type, colour, texture, material);
-        rootNode.addChild(attributeNode);
-        attributeNode.addChild(callback.getSceneGraphNode(shader, name, type, mesh));
+        translateNode.addChild(callback.getSceneGraphNode(shader, name, type, mesh, colour, texture, material));
 
         List<Element> es = getElements(type);
         Element element = new Element();
