@@ -27,8 +27,8 @@ import java.util.Set;
 
 public class LaunchAnimation extends Animation {
 
-    private static final float ACCELERATION = 3f;
-    private static final float INCREMENT = 0.1f;
+    private static final float ACCELERATION = 0.3f;
+    private static final float INCREMENT = 0.01f;
 
     private final Vector dest = new Vector();
     private final Vector temp = new Vector();
@@ -89,7 +89,7 @@ public class LaunchAnimation extends Animation {
             dest.setX(position.getX() + (INCREMENT * launchAxis[0]));
             dest.setY(position.getY() + (INCREMENT * launchAxis[1]));
             dest.setZ(position.getZ() + (INCREMENT * launchAxis[2]));
-            dest.round(1);// Round to 1 decimal place
+            dest.round(2);// Round to 2 decimal places
             if (PerspectiveUtils.isCellCenter(dest)) {
                 // Double size so ball is offscreen, well out of bounds
                 if (PerspectiveUtils.isOutOfBounds(dest, size * 2)) {
