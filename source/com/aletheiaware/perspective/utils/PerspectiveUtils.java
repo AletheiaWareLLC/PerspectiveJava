@@ -154,6 +154,7 @@ public final class PerspectiveUtils {
         SPECULAR_ONLY,
     };
     public static final String[] MATERIAL_NAMES = {
+        "matte",
         "medium",
         "glossy",
         "ambient-only",
