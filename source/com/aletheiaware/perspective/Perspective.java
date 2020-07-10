@@ -40,6 +40,7 @@ import com.aletheiaware.perspective.scene.RotateToAxisAnimation;
 import com.aletheiaware.perspective.utils.PerspectiveUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -178,26 +179,34 @@ public class Perspective {
 
     public void setSize(int size) {
         this.size = size;
+        System.out.println("Size: " + size);
         // Set the outline scale
         outlineScale.set(size, size, size);
+        System.out.println("OutlineScale: " + outlineScale);
         float distance = (size * size) / 2f;
         System.out.println("Distance: " + distance);
         // Set the sky scale
         skyScale.set(distance*2f, distance*2f, distance*2f);
+        System.out.println("SkyScale: " + skyScale);
         // Crop the scene proportionally
         frustum[0] = size * 0.5f;
         frustum[1] = distance*2f;
+        System.out.println("Frustum: " + Arrays.toString(frustum));
         // Ensure light is always outside
         light[0] = 0;
         light[1] = 0;
-        light[2] = size / 2f;
+        light[2] = distance;
         light[3] = 1.0f;
+        System.out.println("Light: " + Arrays.toString(light));
         // Ensure camera is always outside
         cameraEye.set(0.0f, 0.0f, distance);
+        System.out.println("CameraEye: " + cameraEye);
         // Looking at the center
         cameraLookAt.set(0.0f, 0.0f, 0.0f);
+        System.out.println("CameraLookAt: " + cameraLookAt);
         // Head pointing up Y axis
         cameraUp.set(0.0f, 1.0f, 0.0f);
+        System.out.println("CameraUp: " + cameraUp);
     }
 
     public Solution getSolution() {
