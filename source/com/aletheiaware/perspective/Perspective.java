@@ -35,7 +35,6 @@ import com.aletheiaware.perspective.PerspectiveProto.Sky;
 import com.aletheiaware.perspective.PerspectiveProto.Sphere;
 import com.aletheiaware.perspective.PerspectiveProto.Solution;
 import com.aletheiaware.perspective.scene.DropAnimation;
-import com.aletheiaware.perspective.scene.LaunchAnimation;
 import com.aletheiaware.perspective.scene.RotateToAxisAnimation;
 import com.aletheiaware.perspective.utils.PerspectiveUtils;
 
@@ -51,8 +50,7 @@ import java.util.Set;
 public class Perspective {
 
     public interface Callback {
-        void onTravelStart();
-        void onTravelComplete();
+        void onDropComplete();
         void onTurnComplete();
         void onGameLost();
         void onGameWon();
@@ -474,11 +472,10 @@ public class Perspective {
     }
 
     public void drop() {
-        SceneGraphNode node = getSceneGraphNode();
-        synchronized (node) {
+        synchronized (this) {
+            SceneGraphNode node = getSceneGraphNode();
             if (!node.hasAnimation()) {
                 System.out.println("drop");
-                callback.onTravelStart();
                 if (inverseRotation.makeInverse(mainRotation)) {
                     // TODO improve this - creating new sets and maps each time is expensive
                     Set<Vector> blocks = new HashSet<>();
@@ -532,77 +529,7 @@ public class Perspective {
                                 gameWon = true;
                                 callback.onGameWon();
                             } else {
-                                callback.onTravelComplete();
-                            }
-                        }
-                    });
-                } else {
-                    System.err.println("Matrix invert failed");
-                }
-            }
-        }
-    }
-
-    public void launch() {
-        SceneGraphNode node = getSceneGraphNode();
-        synchronized (node) {
-            if (!node.hasAnimation()) {
-                System.out.println("launch");
-                callback.onTravelStart();
-                if (inverseRotation.makeInverse(mainRotation)) {
-                    // TODO improve this - creating new sets and maps each time is expensive
-                    Set<Vector> blocks = new HashSet<>();
-                    List<Element> bs = getElements("block");
-                    if (bs != null) {
-                        for (Element b : bs) {
-                            blocks.add(scene.getVector(b.name));
-                        }
-                    }
-                    Set<Vector> goals = new HashSet<>();
-                    List<Element> gs = getElements("goal");
-                    if (gs != null) {
-                        for (Element g : gs) {
-                            goals.add(scene.getVector(g.name));
-                        }
-                    }
-                    Map<String, Vector> spheres = new HashMap<>();
-                    List<Element> ss = getElements("sphere");
-                    if (ss != null) {
-                        for (Element s : ss) {
-                            spheres.put(s.name, scene.getVector(s.name));
-                        }
-                    }
-                    node.setAnimation(new LaunchAnimation(size, inverseRotation, up, blocks, goals, linkedPortals, spheres) {
-                        @Override
-                        public void onComplete() {
-                            boolean gameLost = false;
-                            boolean gameWon = true;
-                            for (Entry<String, Vector> s : spheres.entrySet()) {
-                                String k = s.getKey();
-                                Vector v = s.getValue();
-                                if (PerspectiveUtils.isOutOfBounds(v, size)) {
-                                    // if any spheres are out of bounds - game over
-                                    gameLost = true;
-                                } else if (!goals.contains(v)) {
-                                    // if all spheres are in the goals - game won
-                                    gameWon = false;
-                                }
-                                System.out.println("Move: " + k + " " + v);
-                                solution.addMove(Move.newBuilder()
-                                        .setKey(k)
-                                        .setValue(PerspectiveUtils.vectorToLocation(v))
-                                        .build());
-                            }
-                            if (gameLost) {
-                                gameOver = true;
-                                gameWon = false;
-                                callback.onGameLost();
-                            } else if (gameWon) {
-                                gameOver = true;
-                                gameWon = true;
-                                callback.onGameWon();
-                            } else {
-                                callback.onTravelComplete();
+                                callback.onDropComplete();
                             }
                         }
                     });
@@ -614,8 +541,8 @@ public class Perspective {
     }
 
     public void rotate(float x, float y) {
-        SceneGraphNode node = getSceneGraphNode();
-        synchronized (node) {
+        synchronized (this) {
+            SceneGraphNode node = getSceneGraphNode();
             if (!node.hasAnimation()) {
                 System.out.println(String.format("rotate %f, %f", x, y));
                 if (inverseRotation.makeInverse(mainRotation)) {
@@ -644,8 +571,8 @@ public class Perspective {
     }
 
     public void rotateToAxis() {
-        SceneGraphNode node = getSceneGraphNode();
-        synchronized (node) {
+        synchronized (this) {
+            SceneGraphNode node = getSceneGraphNode();
             if (!node.hasAnimation()) {
                 System.out.println("rotateToAxis");
                 if (inverseRotation.makeInverse(mainRotation)) {
@@ -664,8 +591,8 @@ public class Perspective {
     }
 
     public void turn(int x, int y, int z) {
-        SceneGraphNode node = getSceneGraphNode();
-        synchronized (node) {
+        synchronized (this) {
+            SceneGraphNode node = getSceneGraphNode();
             if (!node.hasAnimation()) {
                 System.out.println(String.format("turn %d, %d, %d", x, y, z));
                 if (inverseRotation.makeInverse(mainRotation)) {
