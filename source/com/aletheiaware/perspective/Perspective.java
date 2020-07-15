@@ -25,12 +25,14 @@ import com.aletheiaware.joy.scene.TranslateNode;
 import com.aletheiaware.joy.scene.Vector;
 import com.aletheiaware.joy.utils.JoyUtils;
 import com.aletheiaware.perspective.PerspectiveProto.Block;
+import com.aletheiaware.perspective.PerspectiveProto.Dialog;
 import com.aletheiaware.perspective.PerspectiveProto.Location;
 import com.aletheiaware.perspective.PerspectiveProto.Goal;
 import com.aletheiaware.perspective.PerspectiveProto.Move;
 import com.aletheiaware.perspective.PerspectiveProto.Outline;
 import com.aletheiaware.perspective.PerspectiveProto.Portal;
 import com.aletheiaware.perspective.PerspectiveProto.Puzzle;
+import com.aletheiaware.perspective.PerspectiveProto.Scenery;
 import com.aletheiaware.perspective.PerspectiveProto.Sky;
 import com.aletheiaware.perspective.PerspectiveProto.Sphere;
 import com.aletheiaware.perspective.PerspectiveProto.Solution;
@@ -103,6 +105,8 @@ public class Perspective {
     public final Map<String, List<Element>> elements = new HashMap<>();
     // Holds portalA -> portalB and portalB -> portalA
     public final Map<Vector, Vector> linkedPortals = new HashMap<>();
+    // Dialogs of the puzzle addressed name -> dialog
+    public final Map<String, Dialog> dialogs = new HashMap<>();
 
     public Perspective(Callback callback, Scene scene, int size) {
         this.callback = callback;
@@ -303,6 +307,13 @@ public class Perspective {
         es.add(element);
     }
 
+    public void addDialog(Dialog dialog, Vector location) {
+        String name = dialog.getName();
+        System.out.println("Adding " + name + " : " + dialog + " : " + location);
+        scene.putVector(name, location);
+        dialogs.put(name, dialog);
+    }
+
     public void clearLocation(Vector location) {
         System.out.println("Clearing " + location);
         Element element = null;
@@ -377,6 +388,14 @@ public class Perspective {
         for (Sphere s : puzzle.getSphereList()) {
             Vector v = PerspectiveUtils.locationToVector(s.getLocation()).cap(1 - size, size - 1);
             addElement(s.getShader(), s.getName(), "sphere", s.getMesh(), v, s.getColour(), s.getTexture(), s.getMaterial());
+        }
+        for (Dialog d : puzzle.getDialogList()) {
+            Vector v = PerspectiveUtils.locationToVector(d.getLocation()).cap(1 - size, size - 1);
+            addDialog(d, v);
+        }
+        for (Scenery s : puzzle.getSceneryList()) {
+            Vector v = PerspectiveUtils.locationToVector(s.getLocation()).cap(1 - size, size - 1);
+            addElement(s.getShader(), s.getName(), "scenery", s.getMesh(), v, s.getColour(), s.getTexture(), s.getMaterial());
         }
     }
 
@@ -457,6 +476,37 @@ public class Perspective {
                 Vector v = scene.getVector(s.name);
                 Location loc = PerspectiveUtils.vectorToLocation(v);
                 pb.addSphere(Sphere.newBuilder()
+                    .setName(s.name)
+                    .setMesh(s.mesh)
+                    .setColour(s.colour)
+                    .setLocation(loc)
+                    .setTexture(s.texture)
+                    .setMaterial(s.material)
+                    .setShader(s.shader));
+            }
+        }
+        if (dialogs != null) {
+            for (Entry<String, Dialog> e : dialogs.entrySet()) {
+                String name = e.getKey();
+                Dialog d = e.getValue();
+                Vector v = scene.getVector(name);
+                Location loc = PerspectiveUtils.vectorToLocation(v);
+                pb.addDialog(Dialog.newBuilder()
+                    .setName(name)
+                    .setBackgroundColour(d.getBackgroundColour())
+                    .setForegroundColour(d.getForegroundColour())
+                    .setAuthor(d.getAuthor())
+                    .setContent(d.getContent())
+                    .setLocation(loc)
+                    .addAllElement(d.getElementList()));
+            }
+        }
+        List<Element> scenerys = getElements("scenery");
+        if (scenerys != null) {
+            for (Element s : scenerys) {
+                Vector v = scene.getVector(s.name);
+                Location loc = PerspectiveUtils.vectorToLocation(v);
+                pb.addScenery(Scenery.newBuilder()
                     .setName(s.name)
                     .setMesh(s.mesh)
                     .setColour(s.colour)
