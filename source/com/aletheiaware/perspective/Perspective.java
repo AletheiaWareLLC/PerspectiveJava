@@ -56,7 +56,7 @@ public class Perspective {
         void onTurnComplete();
         void onGameLost();
         void onGameWon();
-        SceneGraphNode getSceneGraphNode(String shader, String name, String type, String mesh, String colour, String texture, String material);
+        void addSceneGraphNode(String shader, String name, String type, String mesh, String colour, String texture, String material);
     }
 
     public final float[] down = new float[] {0, -1, 0, 1};
@@ -86,7 +86,6 @@ public class Perspective {
     public Puzzle puzzle;
     public Solution.Builder solution;
     public Map<String, SceneGraphNode> scenegraphs = new HashMap<>();
-    public String sphereShader;
     public boolean gameOver = false;
     public boolean gameWon = false;
     public boolean outlineEnabled = true;
@@ -169,10 +168,7 @@ public class Perspective {
     }
 
     public SceneGraphNode getSceneGraphNode() {
-        if (sphereShader == null || sphereShader.isEmpty()) {
-            sphereShader = getDefaultShader();
-        }
-        return scenegraphs.get(sphereShader);
+        return scenegraphs.get(getDefaultShader());
     }
 
     public int getSize() {
@@ -242,9 +238,7 @@ public class Perspective {
         System.out.println("Outline " + shader + " : " + mesh + " : " + colour + " : " + texture + " : " + material);
         String name = "o0";
         String type = "outline";
-        ScaleNode outlineScale = new ScaleNode("outline-scale");
-        scenegraphs.get(shader).addChild(outlineScale);
-        outlineScale.addChild(callback.getSceneGraphNode(shader, name, type, mesh, colour, texture, material));
+        callback.addSceneGraphNode(shader, name, type, mesh, colour, texture, material);
 
         List<Element> es = getElements(type);
         Element element = new Element();
@@ -267,9 +261,7 @@ public class Perspective {
         System.out.println("Sky " + shader + " : " + mesh + " : " + colour + " : " + texture + " : " + material);
         String name = "sky0";
         String type = "sky";
-        ScaleNode skyScale = new ScaleNode("sky-scale");
-        scenegraphs.get(shader).addChild(skyScale);
-        skyScale.addChild(callback.getSceneGraphNode(shader, name, type, mesh, colour, texture, material));
+        callback.addSceneGraphNode(shader, name, type, mesh, colour, texture, material);
 
         List<Element> es = getElements(type);
         Element element = new Element();
@@ -286,15 +278,9 @@ public class Perspective {
         if (shader == null || shader.isEmpty()) {
             shader = getDefaultShader();
         }
-        if (type.equals("sphere")) {
-            sphereShader = shader;
-        }
         System.out.println("Adding " + shader + " : " + type + " : " + name + " : " + mesh + " : " + location + " : " + colour + " : " + texture + " : " + material);
         scene.putVector(name, location);
-
-        TranslateNode translateNode = new TranslateNode(name);
-        scenegraphs.get(shader).addChild(translateNode);
-        translateNode.addChild(callback.getSceneGraphNode(shader, name, type, mesh, colour, texture, material));
+        callback.addSceneGraphNode(shader, name, type, mesh, colour, texture, material);
 
         List<Element> es = getElements(type);
         Element element = new Element();
