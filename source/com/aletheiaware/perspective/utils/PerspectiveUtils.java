@@ -139,7 +139,7 @@ public final class PerspectiveUtils {
     };
 
     // Material
-    public static final float[] MATTE = new float[]{0.25f, 0.25f, 0.25f};
+    public static final float[] MATTE = new float[]{0.3f, 0.3f, 0.3f};
     public static final float[] MEDIUM = new float[]{0.5f, 0.5f, 0.5f};
     public static final float[] GLOSSY = new float[]{1.0f, 1.0f, 1.0f};
     public static final float[] AMBIENT_ONLY = new float[]{1.0f, 0.0f, 0.0f};
