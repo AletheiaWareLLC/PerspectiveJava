@@ -247,7 +247,7 @@ public class Perspective {
         es.add(element);
     }
 
-    public void setSky(String shader, String mesh, String colour, String texture, String material) {
+    public void addSky(String shader, String name, String mesh, String colour, String texture, String material) {
         if (!skyEnabled) {
             return;
         }
@@ -255,7 +255,6 @@ public class Perspective {
             shader = getDefaultShader();
         }
         System.out.println("Sky " + shader + " : " + mesh + " : " + colour + " : " + texture + " : " + material);
-        String name = "sky0";
         String type = "sky";
         callback.addSceneGraphNode(shader, name, type, mesh, colour, texture, material);
 
@@ -348,9 +347,8 @@ public class Perspective {
             setOutline(o.getShader(), o.getMesh(), o.getColour(), o.getTexture(), o.getMaterial());
         }
 
-        if (puzzle.hasSky()) {
-            Sky o = puzzle.getSky();
-            setSky(o.getShader(), o.getMesh(), o.getColour(), o.getTexture(), o.getMaterial());
+        for (Sky s : puzzle.getSkyList()) {
+            addSky(s.getShader(), s.getName(), s.getMesh(), s.getColour(), s.getTexture(), s.getMaterial());
         }
 
         for (Block b : puzzle.getBlockList()) {
@@ -397,7 +395,8 @@ public class Perspective {
         List<Element> skys = getElements("sky");
         if (skys != null && !skys.isEmpty()) {
             for (Element s : skys) {
-                pb.setSky(Sky.newBuilder()
+                pb.addSky(Sky.newBuilder()
+                    .setName(s.name)
                     .setMesh(s.mesh)
                     .setColour(s.colour)
                     .setTexture(s.texture)
