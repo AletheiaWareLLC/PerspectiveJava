@@ -167,10 +167,6 @@ public class Perspective {
         return null;
     }
 
-    public SceneGraphNode getSceneGraphNode() {
-        return scenegraphs.get(getDefaultShader());
-    }
-
     public int getSize() {
         return size;
     }
@@ -508,9 +504,8 @@ public class Perspective {
     }
 
     public void drop() {
-        synchronized (this) {
-            SceneGraphNode node = getSceneGraphNode();
-            if (!node.hasAnimation()) {
+        synchronized (scene) {
+            if (!scene.hasAnimation()) {
                 System.out.println("drop");
                 if (inverseRotation.makeInverse(mainRotation)) {
                     // TODO improve this - creating new sets and maps each time is expensive
@@ -535,7 +530,7 @@ public class Perspective {
                             spheres.put(s.name, scene.getVector(s.name));
                         }
                     }
-                    node.setAnimation(new DropAnimation(size, inverseRotation, down, blocks, goals, linkedPortals, spheres) {
+                    scene.setAnimation(new DropAnimation(size, inverseRotation, down, blocks, goals, linkedPortals, spheres) {
                         @Override
                         public void onComplete() {
                             boolean gameLost = false;
@@ -577,9 +572,8 @@ public class Perspective {
     }
 
     public void rotate(float x, float y) {
-        synchronized (this) {
-            SceneGraphNode node = getSceneGraphNode();
-            if (!node.hasAnimation()) {
+        synchronized (scene) {
+            if (!scene.hasAnimation()) {
                 System.out.println(String.format("rotate %f, %f", x, y));
                 if (inverseRotation.makeInverse(mainRotation)) {
                     if (y != 0) {
@@ -607,12 +601,11 @@ public class Perspective {
     }
 
     public void rotateToAxis() {
-        synchronized (this) {
-            SceneGraphNode node = getSceneGraphNode();
-            if (!node.hasAnimation()) {
+        synchronized (scene) {
+            if (!scene.hasAnimation()) {
                 System.out.println("rotateToAxis");
                 if (inverseRotation.makeInverse(mainRotation)) {
-                    node.setAnimation(new RotateToAxisAnimation(mainRotation, inverseRotation, tempRotation, cameraEye, cameraUp) {
+                    scene.setAnimation(new RotateToAxisAnimation(mainRotation, inverseRotation, tempRotation, cameraEye, cameraUp) {
                         @Override
                         public void onComplete() {
                             solution.setScore(solution.getScore() + 1);
@@ -627,12 +620,11 @@ public class Perspective {
     }
 
     public void turn(int x, int y, int z) {
-        synchronized (this) {
-            SceneGraphNode node = getSceneGraphNode();
-            if (!node.hasAnimation()) {
+        synchronized (scene) {
+            if (!scene.hasAnimation()) {
                 System.out.println(String.format("turn %d, %d, %d", x, y, z));
                 if (inverseRotation.makeInverse(mainRotation)) {
-                    node.setAnimation(new RotationAnimation(mainRotation, inverseRotation, tempRotation, 250, (float) Math.PI / 2.0f, x, y, z) {
+                    scene.setAnimation(new RotationAnimation(mainRotation, inverseRotation, tempRotation, 250, (float) Math.PI / 2.0f, x, y, z) {
                         @Override
                         public void onComplete() {
                             callback.onTurnComplete();
