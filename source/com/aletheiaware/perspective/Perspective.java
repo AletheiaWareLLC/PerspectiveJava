@@ -380,7 +380,7 @@ public class Perspective {
             addDialog(d, v);
         }
         for (Scenery s : puzzle.getSceneryList()) {
-            Vector v = PerspectiveUtils.locationToVector(s.getLocation()).cap(1 - size, size - 1);
+            Vector v = PerspectiveUtils.locationToVector(s.getLocation());// Don't cap scenery
             addElement(s.getShader(), s.getName(), "scenery", s.getMesh(), v, s.getColour(), s.getTexture(), s.getMaterial());
         }
     }
