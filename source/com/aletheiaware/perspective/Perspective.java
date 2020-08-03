@@ -174,24 +174,30 @@ public class Perspective {
     public void setSize(int size) {
         this.size = size;
         System.out.println("Size: " + size);
+
         // Set the outline scale
         outlineScale.set(size, size, size);
         System.out.println("OutlineScale: " + outlineScale);
-        float distance = (size * size) / 2f;
-        System.out.println("Distance: " + distance);
+        float square = size * size;
+        System.out.println("Square: " + square);
         // Set the sky scale
-        skyScale.set(distance*2f, distance*2f, distance*2f);
+        skyScale.set(square, square, square);
         System.out.println("SkyScale: " + skyScale);
+
         // Crop the scene proportionally
-        frustum[0] = size * 0.5f;
-        frustum[1] = distance*2f;
+        frustum[0] = size / 2f;
+        frustum[1] = square;
         System.out.println("Frustum: " + Arrays.toString(frustum));
+
+        float distance = square / 2f;
+        System.out.println("Distance: " + distance);
         // Ensure light is always outside
         light[0] = 0;
         light[1] = 0;
         light[2] = distance;
         light[3] = 1.0f;
         System.out.println("Light: " + Arrays.toString(light));
+
         // Ensure camera is always outside
         cameraEye.set(0.0f, 0.0f, distance);
         System.out.println("CameraEye: " + cameraEye);
