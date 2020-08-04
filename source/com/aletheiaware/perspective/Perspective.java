@@ -62,7 +62,7 @@ public class Perspective {
 
     public final float[] down = new float[] {0, -1, 0, 1};
     public final float[] up = new float[] {0, 1, 0, 1};
-    public final float[] frustum = new float[2];
+    public final float[] cameraFrustum = new float[2];
     public final float[] light = new float[4];
     public final float[] temp = new float[4];
     public final Matrix model = new Matrix();
@@ -131,8 +131,6 @@ public class Perspective {
         scene.putFloatArray("down", down);
         // Up
         scene.putFloatArray("up", up);
-        // Frustum
-        scene.putFloatArray("frustum", frustum);
         // Light
         scene.putFloatArray("light", light);
         // MVP
@@ -149,6 +147,7 @@ public class Perspective {
         scene.putVector("camera-eye", cameraEye);
         scene.putVector("camera-look-at", cameraLookAt);
         scene.putVector("camera-up", cameraUp);
+        scene.putFloatArray("camera-frustum", cameraFrustum);
     }
 
     public Scene getScene() {
@@ -185,11 +184,6 @@ public class Perspective {
         skyScale.set(square, square, square);
         System.out.println("SkyScale: " + skyScale);
 
-        // Crop the scene proportionally
-        frustum[0] = size / 2f;
-        frustum[1] = square;
-        System.out.println("Frustum: " + Arrays.toString(frustum));
-
         float distance = square / 2f;
         System.out.println("Distance: " + distance);
         // Ensure light is always outside
@@ -208,6 +202,10 @@ public class Perspective {
         // Head pointing up Y axis
         cameraUp.set(0.0f, 1.0f, 0.0f);
         System.out.println("CameraUp: " + cameraUp);
+        // Crop the scene proportionally
+        cameraFrustum[0] = size / 2f;
+        cameraFrustum[1] = square;
+        System.out.println("Frustum: " + Arrays.toString(cameraFrustum));
     }
 
     public Solution getSolution() {
