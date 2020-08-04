@@ -53,6 +53,7 @@ public class Perspective {
 
     public interface Callback {
         void onDropComplete();
+        void onRotateComplete();
         void onTurnComplete();
         void onGameLost();
         void onGameWon();
@@ -598,6 +599,7 @@ public class Perspective {
                     if (!inverseRotation.makeInverse(mainRotation)) {
                         System.err.println("Matrix invert failed");
                     }
+                    callback.onRotateComplete();
                 } else {
                     System.err.println("Matrix invert failed");
                 }
